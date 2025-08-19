@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Javaanse Kalender</title>
+    <title>Javaanse Kalender (Tijdzone Gecorrigeerd)</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -190,7 +190,7 @@
     </style>
 </head>
 <body>
-    <h1>Javaanse Kalender</h1>
+    <h1>Javaanse Kalender (Tijdzone Gecorrigeerd)</h1>
     <div class="container">
         <div class="navigatie">
             <button onclick="vorigeMaand()">←</button>
@@ -216,7 +216,10 @@
             <input type="date" id="datePicker">
             <button onclick="goToDate()">Menyang Tanggal</button>
         </div>
-
+        <div class="tijdzone-info">
+            <p></p>
+            <p><span id="huidigeTijdzone"></span></p>
+        </div>
     </div>
     <div class="footer">
         © 2025 Javaanse Kalender (Tijdzone Gecorrigeerd)
@@ -649,7 +652,3 @@
     </script>
 </body>
 </html>
-
-
-
-
