@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Javaanse Kalender</title>
+    <title>Javaanse Kalender (Tijdzone Gecorrigeerd)</title>
     <style>
         body {
             font-family: Arial, Helvetica, sans-serif;
@@ -158,6 +158,14 @@
         .goto-date button:hover {
             background-color: #6b4420;
         }
+        .tijdzone-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border: 1px solid #8b5a2b;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
         @media (max-width: 600px) {
             h1 {
                 font-size: 2rem;
@@ -182,7 +190,7 @@
     </style>
 </head>
 <body>
-    <h2>Penanggalan</h2>
+    <h1>Javaanse Kalender (Tijdzone Gecorrigeerd)</h1>
     <div class="container">
         <div class="navigatie">
             <button onclick="vorigeMaand()">←</button>
@@ -208,15 +216,22 @@
             <input type="date" id="datePicker">
             <button onclick="goToDate()">Menyang Tanggal</button>
         </div>
+        <div class="tijdzone-info">
+            <p>Deze kalender gebruikt Javaanse tijd (UTC+7) voor consistentie, ongeacht uw lokale tijdzone.</p>
+            <p>Huidige tijdzone van browser: <span id="huidigeTijdzone"></span></p>
+        </div>
     </div>
     <div class="footer">
-        © 2025 Javaanse Kalender
+        © 2025 Javaanse Kalender (Tijdzone Gecorrigeerd)
     </div>
 
     <script>
-        // Referentiedatums
-        const referentieDatum1 = new Date(2023, 7, 5); // 5 augustus 2023 (Javaans jaar 6449, dag 1)
-        const referentieDatum2 = new Date(1975, 11, 20); // 20 december 1975 (Javaans jaar 6400, dag 1)
+        // Toon de huidige tijdzone van de browser
+        document.getElementById('huidigeTijdzone').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        
+        // Referentiedatums - gebruik UTC om tijdzoneproblemen te voorkomen
+        const referentieDatum1 = new Date(Date.UTC(2023, 7, 5)); // 5 augustus 2023 (Javaans jaar 6449, dag 1)
+        const referentieDatum2 = new Date(Date.UTC(1975, 11, 20)); // 20 december 1975 (Javaans jaar 6400, dag 1)
         const referentieJavaansJaar1 = 6449;
         const referentieJavaansJaar2 = 6400;
 
@@ -339,16 +354,23 @@
 
         // Functie om het Gregoriaanse jaar te verkorten naar twee cijfers
         function verkortJaar(datum) {
-            const jaar = datum.getFullYear();
+            const jaar = datum.getUTCFullYear();
             return (jaar % 100).toString().padStart(2, '0');
         }
 
         // Functie om de Javaanse datum te berekenen op basis van Gregoriaanse datum
         function converteerNaarJavaanseDatum(gregoriaanseDatum) {
+            // Converteer naar UTC-datum om tijdzoneproblemen te voorkomen
+            const utcDatum = new Date(Date.UTC(
+                gregoriaanseDatum.getUTCFullYear(),
+                gregoriaanseDatum.getUTCMonth(),
+                gregoriaanseDatum.getUTCDate()
+            ));
+            
             let referentieDatum, referentieJavaansJaar;
 
             // Bepaal welke referentiedatum het dichtst bij de geselecteerde datum ligt
-            if (gregoriaanseDatum >= referentieDatum1) {
+            if (utcDatum >= referentieDatum1) {
                 referentieDatum = referentieDatum1;
                 referentieJavaansJaar = referentieJavaansJaar1;
             } else {
@@ -356,7 +378,7 @@
                 referentieJavaansJaar = referentieJavaansJaar2;
             }
 
-            const dagenVerschil = Math.floor((gregoriaanseDatum - referentieDatum) / (1000 * 60 * 60 * 24));
+            const dagenVerschil = Math.floor((utcDatum - referentieDatum) / (1000 * 60 * 60 * 24));
             let resterendeDagen = dagenVerschil;
 
             // Bepaal het Javaanse jaar
@@ -408,17 +430,19 @@
             // Voeg de dagen van de huidige maand toe
             dagenVerschil += javaanseDag - 1;
 
-            // Bereken de Gregoriaanse datum
+            // Bereken de Gregoriaanse datum in UTC
             const gregoriaanseDatum = new Date(referentieDatum);
-            gregoriaanseDatum.setDate(gregoriaanseDatum.getDate() + dagenVerschil);
+            gregoriaanseDatum.setUTCDate(gregoriaanseDatum.getUTCDate() + dagenVerschil);
 
             return gregoriaanseDatum;
         }
 
-        // Functie om de dag van de week te bepalen
+        // Functie om de dag van de week te bepalen (in Javaanse tijdzone UTC+7)
         function bepaalDagVanDeWeek(datum) {
+            // Converteer naar Javaanse tijd (UTC+7)
+            const javaanseTijd = new Date(datum.getTime() + (7 * 60 * 60 * 1000));
             const dagen = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"];
-            return dagen[datum.getDay()];
+            return dagen[javaanseTijd.getUTCDay()];
         }
 
         // Functie om te controleren of een Javaanse dag speciaal is
@@ -471,110 +495,112 @@
             });
         }
 
-        // Functie om de Javaanse kalender weer te geven
-        // Functie om de Javaanse kalender weer te geven
-function toonJavaanseKalender() {
-    const kalenderElement = document.getElementById('kalender');
-    const javaansJaarElement = document.getElementById('javaansJaar');
-    const huidigeMaandWeergave = document.getElementById('huidigeMaandWeergave');
-    kalenderElement.innerHTML = "";
-
-    // Toon het Javaanse jaartal bovenaan
-    javaansJaarElement.textContent = `Koto: ${huidigJavaansJaar}`;
-
-    // Toon de huidige Javaanse maand
-    huidigeMaandWeergave.textContent = `${javaanseMaanden[huidigeJavaanseMaand - 1][0]}`;
-
-    // Markeer de kalenderheader
-    markeerKalenderHeader(huidigeJavaanseMaand);
-
-    // Bepaal het aantal dagen in de Javaanse maand
-    const dagenInMaand = javaanseMaanden[huidigeJavaanseMaand - 1][1];
-
-    // Bepaal de Gregoriaanse startdatum van de Javaanse maand
-    const startDatum = berekenGregoriaanseDatum(huidigJavaansJaar, huidigeJavaanseMaand, 1);
-
-    // Bepaal de dag van de week van de eerste dag van de Javaanse maand
-    const eersteDagVanDeWeek = startDatum.getDay();
-
-    // Voeg lege vakjes toe voor de dagen vóór de eerste dag van de maand
-    for (let i = 0; i < eersteDagVanDeWeek; i++) {
-        const leegElement = document.createElement('div');
-        leegElement.className = 'dag';
-        kalenderElement.appendChild(leegElement);
-    }
-
-    // Huidige Gregoriaanse datum
-    const huidigeDatum = new Date();
-    const huidigeDag = huidigeDatum.getDate();
-    const huidigeMaand = huidigeDatum.getMonth() + 1;
-    const huidigJaar = huidigeDatum.getFullYear();
-
-    // Lijst om speciale dagen op te slaan
-    const specialeDagen = [];
-
-    // Voeg de dagen van de Javaanse maand toe
-    for (let dag = 1; dag <= dagenInMaand; dag++) {
-        const gregoriaanseDatum = berekenGregoriaanseDatum(huidigJavaansJaar, huidigeJavaanseMaand, dag);
-        const pasaran = bepaalPasaran(gregoriaanseDatum);
-        const pasaranInfo = pasaranData.find(p => p.naam === pasaran);
-        const pasaranWaarde = pasaranInfo?.waarde || 0;
-        const verkortePasaran = pasaranInfo?.verkort || pasaran;
-        const verkortGregoriaansJaar = verkortJaar(gregoriaanseDatum);
-        const dagVanDeWeek = bepaalDagVanDeWeek(gregoriaanseDatum);
-
-        // Controleer of dit de huidige dag is
-        const isHuidigeDag =
-            gregoriaanseDatum.getDate() === huidigeDag &&
-            gregoriaanseDatum.getMonth() + 1 === huidigeMaand &&
-            gregoriaanseDatum.getFullYear() === huidigJaar;
-
-        // Controleer of dit een speciale Javaanse dag is
-        const isSpecialeJavaanseDagVoorMaand = isSpecialeJavaanseDag(huidigeJavaanseMaand, dag);
-
-        // Controleer of dit een speciale dag en Pasaran-combinatie is
-        const isSpecialeDagPasaranVoorMaand = isSpecialeDagPasaran(huidigeJavaanseMaand, dagVanDeWeek, verkortePasaran);
-
-        // Controleer of dit een speciale dag is
-        const specialeDag = isSpecialeDag(huidigeJavaanseMaand, dag);
-
-        // Controleer of dit een speciale combinatie is (maand, dag van de week, Pasaran)
-        const specialeCombinatie = specialeDagenCombinaties.find(
-            (combinatie) =>
-                combinatie.maand === huidigeJavaanseMaand &&
-                combinatie.dagVanDeWeek === dagVanDeWeek &&
-                combinatie.pasaran === verkortePasaran
-        );
-
-        // Als het een speciale dag is, voeg deze toe aan de lijst
-        if (specialeDag || specialeCombinatie) {
-            specialeDagen.push({
-                naam: specialeDag || specialeCombinatie.naam,
-                gregoriaanseDatum: `${gregoriaanseDatum.getDate()}-${gregoriaanseDatum.getMonth() + 1}-${gregoriaanseDatum.getFullYear()}`
-            });
-        }
-
-        const dagElement = document.createElement('div');
-        dagElement.className = `dag ${isHuidigeDag ? 'huidige-dag' : ''} ${specialeDag || specialeCombinatie ? 'speciale-dag-geel' : ''}`;
-        dagElement.innerHTML = `
-            <strong class="${isSpecialeJavaanseDagVoorMaand ? 'speciale-dag' : ''}">${dag}</strong><br>
-            <span class="${isSpecialeDagPasaranVoorMaand ? 'speciale-pasaran' : 'normale-pasaran'}">${verkortePasaran}</span> (${pasaranWaarde})<br>
-            ${gregoriaanseDatum.getDate()}-${gregoriaanseDatum.getMonth() + 1}-${verkortGregoriaansJaar}
-        `;
-        kalenderElement.appendChild(dagElement);
-    }
-
-    // Toon de speciale dagen in de footer
-    toonSpecialeDagenFooter(specialeDagen);
-}
-
-        // Functie om de Pasaran te bepalen
+        // Functie om de Pasaran te bepalen (tijdzone-neutraal)
         function bepaalPasaran(datum) {
-            const referentieDatumPasaran = new Date(2000, 0, 1);
+            // Gebruik een vaste referentiedatum in UTC (1 januari 2000)
+            const referentieDatumPasaran = new Date(Date.UTC(2000, 0, 1));
+            
+            // Bereken het verschil in dagen (gebaseerd op UTC)
             const dagenVerschil = Math.floor((datum - referentieDatumPasaran) / (1000 * 60 * 60 * 24));
             const pasaranIndex = (dagenVerschil % 5 + 5) % 5;
             const pasaran = ["Legi", "Pahing", "Pon", "Wage", "Kliwon"];
             return pasaran[pasaranIndex];
+        }
+
+        // Functie om de Javaanse kalender weer te geven
+        function toonJavaanseKalender() {
+            const kalenderElement = document.getElementById('kalender');
+            const javaansJaarElement = document.getElementById('javaansJaar');
+            const huidigeMaandWeergave = document.getElementById('huidigeMaandWeergave');
+            kalenderElement.innerHTML = "";
+
+            // Toon het Javaanse jaartal bovenaan
+            javaansJaarElement.textContent = `Koto: ${huidigJavaansJaar}`;
+
+            // Toon de huidige Javaanse maand
+            huidigeMaandWeergave.textContent = `${javaanseMaanden[huidigeJavaanseMaand - 1][0]}`;
+
+            // Markeer de kalenderheader
+            markeerKalenderHeader(huidigeJavaanseMaand);
+
+            // Bepaal het aantal dagen in de Javaanse maand
+            const dagenInMaand = javaanseMaanden[huidigeJavaanseMaand - 1][1];
+
+            // Bepaal de Gregoriaanse startdatum van de Javaanse maand (in UTC)
+            const startDatum = berekenGregoriaanseDatum(huidigJavaansJaar, huidigeJavaanseMaand, 1);
+
+            // Bepaal de dag van de week van de eerste dag van de Javaanse maand (in Javaanse tijd UTC+7)
+            const eersteDagVanDeWeek = new Date(startDatum.getTime() + (7 * 60 * 60 * 1000)).getUTCDay();
+
+            // Voeg lege vakjes toe voor de dagen vóór de eerste dag van de maand
+            for (let i = 0; i < eersteDagVanDeWeek; i++) {
+                const leegElement = document.createElement('div');
+                leegElement.className = 'dag';
+                kalenderElement.appendChild(leegElement);
+            }
+
+            // Huidige Gregoriaanse datum (in UTC)
+            const huidigeDatum = new Date();
+            const huidigeUTCDag = huidigeDatum.getUTCDate();
+            const huidigeUTCMaand = huidigeDatum.getUTCMonth() + 1;
+            const huidigeUTCJaar = huidigeDatum.getUTCFullYear();
+
+            // Lijst om speciale dagen op te slaan
+            const specialeDagen = [];
+
+            // Voeg de dagen van de Javaanse maand toe
+            for (let dag = 1; dag <= dagenInMaand; dag++) {
+                const gregoriaanseDatum = berekenGregoriaanseDatum(huidigJavaansJaar, huidigeJavaanseMaand, dag);
+                const pasaran = bepaalPasaran(gregoriaanseDatum);
+                const pasaranInfo = pasaranData.find(p => p.naam === pasaran);
+                const pasaranWaarde = pasaranInfo?.waarde || 0;
+                const verkortePasaran = pasaranInfo?.verkort || pasaran;
+                const verkortGregoriaansJaar = verkortJaar(gregoriaanseDatum);
+                const dagVanDeWeek = bepaalDagVanDeWeek(gregoriaanseDatum);
+
+                // Controleer of dit de huidige dag is (op basis van UTC)
+                const isHuidigeDag =
+                    gregoriaanseDatum.getUTCDate() === huidigeUTCDag &&
+                    gregoriaanseDatum.getUTCMonth() + 1 === huidigeUTCMaand &&
+                    gregoriaanseDatum.getUTCFullYear() === huidigeUTCJaar;
+
+                // Controleer of dit een speciale Javaanse dag is
+                const isSpecialeJavaanseDagVoorMaand = isSpecialeJavaanseDag(huidigeJavaanseMaand, dag);
+
+                // Controleer of dit een speciale dag en Pasaran-combinatie is
+                const isSpecialeDagPasaranVoorMaand = isSpecialeDagPasaran(huidigeJavaanseMaand, dagVanDeWeek, verkortePasaran);
+
+                // Controleer of dit een speciale dag is
+                const specialeDag = isSpecialeDag(huidigeJavaanseMaand, dag);
+
+                // Controleer of dit een speciale combinatie is (maand, dag van de week, Pasaran)
+                const specialeCombinatie = specialeDagenCombinaties.find(
+                    (combinatie) =>
+                        combinatie.maand === huidigeJavaanseMaand &&
+                        combinatie.dagVanDeWeek === dagVanDeWeek &&
+                        combinatie.pasaran === verkortePasaran
+                );
+
+                // Als het een speciale dag is, voeg deze toe aan de lijst
+                if (specialeDag || specialeCombinatie) {
+                    specialeDagen.push({
+                        naam: specialeDag || specialeCombinatie.naam,
+                        gregoriaanseDatum: `${gregoriaanseDatum.getUTCDate()}-${gregoriaanseDatum.getUTCMonth() + 1}-${gregoriaanseDatum.getUTCFullYear()}`
+                    });
+                }
+
+                const dagElement = document.createElement('div');
+                dagElement.className = `dag ${isHuidigeDag ? 'huidige-dag' : ''} ${specialeDag || specialeCombinatie ? 'speciale-dag-geel' : ''}`;
+                dagElement.innerHTML = `
+                    <strong class="${isSpecialeJavaanseDagVoorMaand ? 'speciale-dag' : ''}">${dag}</strong><br>
+                    <span class="${isSpecialeDagPasaranVoorMaand ? 'speciale-pasaran' : 'normale-pasaran'}">${verkortePasaran}</span> (${pasaranWaarde})<br>
+                    ${gregoriaanseDatum.getUTCDate()}-${gregoriaanseDatum.getUTCMonth() + 1}-${verkortGregoriaansJaar}
+                `;
+                kalenderElement.appendChild(dagElement);
+            }
+
+            // Toon de speciale dagen in de footer
+            toonSpecialeDagenFooter(specialeDagen);
         }
 
         // Functie om naar de volgende maand te gaan
@@ -602,7 +628,7 @@ function toonJavaanseKalender() {
         // Functie om naar een specifieke datum te gaan
         function goToDate() {
             const datePicker = document.getElementById('datePicker');
-            const selectedDate = new Date(datePicker.value);
+            const selectedDate = new Date(datePicker.value + 'T00:00:00Z'); // Behandel als UTC
 
             if (isNaN(selectedDate.getTime())) {
                 alert("Selecteer een geldige datum.");
