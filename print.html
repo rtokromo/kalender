@@ -894,12 +894,23 @@
                 // Eerste dag van deze weekdag binnen de maand
                 const offset = (r - startIndex + 7) % 7;
                 const eersteDag = 1 + offset;
+                // Weekdagen die VÓÓR de startweekdag liggen, beginnen pas in kolom 2:
+                // hun eerste voorkomen valt in de eerste hele week (kolomindex 1). Zo
+                // staan de dagen binnen elke kolom in de juiste volgorde, ook als de
+                // maand niet op zondag (Dotho) begint.
+                const startKolom = (r >= startIndex) ? 0 : 1;
 
                 gridHTML += '<tr>';
                 gridHTML += `<td class="pm-weekdag">${wd.label}<small>neptu ${wd.neptu}</small></td>`;
 
                 for (let kol = 0; kol < aantalKolommen; kol++) {
-                    const dag = eersteDag + kol * 7;
+                    // Lege cel vóór het eerste voorkomen van deze weekdag
+                    if (kol < startKolom) {
+                        gridHTML += '<td class="pm-leeg"></td>';
+                        continue;
+                    }
+
+                    const dag = eersteDag + (kol - startKolom) * 7;
 
                     if (dag > dagenInMaand) {
                         gridHTML += '<td class="pm-leeg"></td>';
