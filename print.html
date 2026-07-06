@@ -254,12 +254,12 @@
                 color: #4a3a2a;
                 margin: 0 0 3px 0;
             }
-            /* GOGONO SRENGAT-koppen */
+            /* GOGONO SRENGAT-koppen (nu onderaan) */
             .pm-srengat-koppen {
                 font-size: 10px;
                 font-weight: bold;
                 color: #a10000;
-                margin: 0 0 4px 0;
+                margin: 6px 0 0 0;
                 line-height: 1.4;
             }
             /* Traditionele maandtitel */
@@ -302,6 +302,10 @@
                 font-weight: normal;
                 font-size: 9px;
                 opacity: 0.85;
+            }
+            /* Weekdag met speciale weton-combinatie in deze maand: rood label */
+            .pm-weekdag-speciaal {
+                background-color: #a10000;
             }
             .pm-leeg {
                 background: repeating-linear-gradient(
@@ -903,8 +907,13 @@
                 // maand niet op zondag (Dotho) begint.
                 const startKolom = (r >= startIndex) ? 0 : 1;
 
+                // Weekdagen met een speciale weton-combinatie in deze maand krijgen
+                // een rood label (zoals de rode weekdag-koppen op het scherm).
+                const specWeekdagen = (specialeDagenPasaranPerMaand[maand] || []).map(s => s.dag);
+                const isSpecWeekdag = specWeekdagen.includes(wd.kort);
+
                 gridHTML += '<tr>';
-                gridHTML += `<td class="pm-weekdag">${wd.label}<small>${wd.neptu}</small></td>`;
+                gridHTML += `<td class="pm-weekdag ${isSpecWeekdag ? "pm-weekdag-speciaal" : ""}">${wd.label}<small>${wd.neptu}</small></td>`;
 
                 for (let kol = 0; kol < aantalKolommen; kol++) {
                     // Lege cel vóór het eerste voorkomen van deze weekdag
@@ -964,23 +973,27 @@
 
             gridHTML += '</tbody></table>';
 
-            // GOGONO SRENGAT-koppen bovenaan
+            // GOGONO SRENGAT-koppen (nu ONDERAAN), met de berekende Gregoriaanse datum
             const koppen = gogonoSrengatKoppen[maand] || [];
-            const koppenHTML = koppen.length
-                ? `<div class="pm-srengat-koppen">${koppen.join("<br>")}</div>`
-                : "";
-
-            // Voetregel met samenvatting bijzondere dagen
-            const voetHTML = bijzondereDagen.length
-                ? `<div class="pm-voet"><strong>Gogonoh Srengat:</strong> ${bijzondereDagen.join(" &nbsp;•&nbsp; ")}</div>`
+            const koppenMetDatum = koppen.map((kop) => {
+                const mTgl = kop.match(/TANGGAL\s+(\d+)/);
+                if (mTgl) {
+                    const tgl = parseInt(mTgl[1], 10);
+                    if (tgl >= 1 && tgl <= dagenInMaand) {
+                        const gd = berekenGregoriaanseDatum(jaar, maand, tgl);
+                        return `${kop} &nbsp;(${formatteerDatumManual(gd)})`;
+                    }
+                }
+                return kop;
+            });
+            const koppenHTML = koppenMetDatum.length
+                ? `<div class="pm-srengat-koppen">${koppenMetDatum.join("<br>")}</div>`
                 : "";
 
             return `<div class="print-maand">
-                <div class="pm-legenda">srengat ciloko (x) &nbsp; tanggal ciloko (–) &nbsp; pasaran ciloko</div>
-                ${koppenHTML}
                 <div class="pm-titel">${maand}. ${maandNaam} SASI ${sasiNamen[maand - 1]} KOTO ${jaar} ${jaarLabelStaart}</div>
                 ${gridHTML}
-                ${voetHTML}
+                ${koppenHTML}
             </div>`;
         }
 
