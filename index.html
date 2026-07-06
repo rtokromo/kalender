@@ -539,11 +539,16 @@
                 kalenderElement.appendChild(leegElement);
             }
 
-            // Huidige Gregoriaanse datum (in UTC)
-            const huidigeDatum = new Date();
-            const huidigeUTCDag = huidigeDatum.getUTCDate();
-            const huidigeUTCMaand = huidigeDatum.getUTCMonth() + 1;
-            const huidigeUTCJaar = huidigeDatum.getUTCFullYear();
+            // Huidige datum in de LOKALE tijdzone van de gebruiker.
+            // Lees de lokale kalenderdag en bouw daarmee een UTC-middernachtdatum,
+            // zodat de vergelijking aansluit op de dagcellen (ook op UTC-middernacht).
+            // Gevolg: iemand in Jakarta (UTC+7) ziet zijn reeds aangebroken lokale dag,
+            // iemand in Paramaribo (UTC-3) ziet zijn eigen lokale dag.
+            const nu = new Date();
+            const lokaleVandaag = new Date(Date.UTC(nu.getFullYear(), nu.getMonth(), nu.getDate()));
+            const huidigeUTCDag = lokaleVandaag.getUTCDate();
+            const huidigeUTCMaand = lokaleVandaag.getUTCMonth() + 1;
+            const huidigeUTCJaar = lokaleVandaag.getUTCFullYear();
 
             // Lijst om speciale dagen op te slaan
             const specialeDagen = [];
@@ -558,7 +563,7 @@
                 const verkortGregoriaansJaar = verkortJaar(gregoriaanseDatum);
                 const dagVanDeWeek = bepaalDagVanDeWeek(gregoriaanseDatum);
 
-                // Controleer of dit de huidige dag is (op basis van UTC)
+                // Controleer of dit de huidige dag is (op basis van de lokale dag van de gebruiker)
                 const isHuidigeDag =
                     gregoriaanseDatum.getUTCDate() === huidigeUTCDag &&
                     gregoriaanseDatum.getUTCMonth() + 1 === huidigeUTCMaand &&
@@ -643,8 +648,10 @@
 
         // Initialiseer de kalender bij het laden van de pagina
         document.addEventListener('DOMContentLoaded', () => {
-            const huidigeDatum = new Date();
-            const { javaansJaar, javaanseMaand } = converteerNaarJavaanseDatum(huidigeDatum);
+            // Open op de Javaanse maand die hoort bij de LOKALE dag van de gebruiker.
+            const nu = new Date();
+            const lokaleVandaag = new Date(Date.UTC(nu.getFullYear(), nu.getMonth(), nu.getDate()));
+            const { javaansJaar, javaanseMaand } = converteerNaarJavaanseDatum(lokaleVandaag);
             huidigJavaansJaar = javaansJaar;
             huidigeJavaanseMaand = javaanseMaand;
             toonJavaanseKalender();
@@ -652,4 +659,3 @@
     </script>
 </body>
 </html>
-
