@@ -313,6 +313,9 @@
                 font-weight: bold;
                 line-height: 1.1;
             }
+            .pm-tanggal-speciaal {
+                color: #a10000;
+            }
             .pm-pasaran {
                 font-size: 10px;
             }
@@ -901,7 +904,7 @@
                 const startKolom = (r >= startIndex) ? 0 : 1;
 
                 gridHTML += '<tr>';
-                gridHTML += `<td class="pm-weekdag">${wd.label}<small>neptu ${wd.neptu}</small></td>`;
+                gridHTML += `<td class="pm-weekdag">${wd.label}<small>${wd.neptu}</small></td>`;
 
                 for (let kol = 0; kol < aantalKolommen; kol++) {
                     // Lege cel vóór het eerste voorkomen van deze weekdag
@@ -921,6 +924,8 @@
                     const pasaran = bepaalPasaran(g);
                     const pInfo = pasaranData.find(p => p.naam === pasaran);
                     const pWaarde = pInfo?.waarde || 0;
+                    // Lokale schrijfwijze: "Pahing" wordt "Paing" (rekenlogica blijft ongewijzigd)
+                    const pasaranWeergave = (pasaran === "Pahing") ? "Paing" : pasaran;
 
                     const isHuidig =
                         g.getUTCDate() === vDag &&
@@ -929,6 +934,8 @@
 
                     // Benoemde bijzondere dag (GOGONO SRENGAT) op deze tanggal?
                     const specDag = isSpecialeDag(maand, dag);
+                    // Speciale Javaanse dag → rood dagnummer (zoals op het scherm)
+                    const isSpecJavDag = isSpecialeJavaanseDag(maand, dag);
                     // Speciale weekdag/pasaran-combinatie (uit bestaande app-tabel)
                     const isSpecPas = isSpecialeDagPasaran(maand, wd.kort, pInfo?.verkort || pasaran);
                     const specComb = specialeDagenCombinaties.find(
@@ -946,8 +953,8 @@
                     if (isHuidig) celKlassen.push("pm-vandaag");
 
                     gridHTML += `<td class="${celKlassen.join(" ")}">
-                        <div class="pm-tanggal">${dag}</div>
-                        <div class="pm-pasaran ${isSpecPas ? "pm-pasaran-speciaal" : ""}">${pasaran} ${pWaarde}</div>
+                        <div class="pm-tanggal ${isSpecJavDag ? "pm-tanggal-speciaal" : ""}">${dag}</div>
+                        <div class="pm-pasaran ${isSpecPas ? "pm-pasaran-speciaal" : ""}">${pasaranWeergave} ${pWaarde}</div>
                         <div class="pm-datum">${formatteerDatumManual(g)}</div>
                     </td>`;
                 }
