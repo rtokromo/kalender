@@ -872,8 +872,9 @@
             const startKort = bepaalDagVanDeWeek(startDatum);
             const startIndex = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"].indexOf(startKort);
 
-            // Aantal kolommen: 36-daagse maand heeft één rij met 6 weken, anders 5
-            const aantalKolommen = (dagenInMaand === 36) ? 6 : 5;
+            // Altijd 6 kolommen, zodat élke maand dezelfde breedte/indeling heeft.
+            // Een 35-daagse maand vult 5 kolommen; de 6e kolom blijft dan leeg (gearceerd).
+            const aantalKolommen = 6;
 
             // Vandaag op basis van de LOKALE dag van de gebruiker
             const nu = new Date();
