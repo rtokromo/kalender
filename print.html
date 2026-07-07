@@ -200,6 +200,7 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin: 4px 5px;
         }
         .print-knop button:hover {
             background-color: #4a2e15;
@@ -238,25 +239,58 @@
             #printContainer {
                 display: block;
             }
-            /* Elke maand op een eigen pagina, identiek opgemaakt */
+            /* Gedeelde opmaak per maandblok (oriëntatie-onafhankelijk) */
             .print-maand {
-                page-break-after: always;
-                break-after: page;
                 page-break-inside: avoid;
-                /* Verticaal centreren op de liggende A4-pagina (hoogte minus marges) */
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
-                min-height: 185mm;
                 box-sizing: border-box;
                 /* Lichte batik-achtergrond (kawung-motief), ingesloten zodat het meeprint */
                 background-color: #faf6ec;
                 background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4MCcgaGVpZ2h0PSc4MCcgdmlld0JveD0nMCAwIDgwIDgwJz48ZyBmaWxsPSdub25lJyBzdHJva2U9JyNjOGIwODMnIHN0cm9rZS13aWR0aD0nMS4xJyBvcGFjaXR5PScwLjQ1Jz48ZWxsaXBzZSBjeD0nMjAnIGN5PScyMCcgcng9JzE0JyByeT0nOScvPjxlbGxpcHNlIGN4PScyMCcgY3k9JzIwJyByeD0nOScgcnk9JzE0Jy8+PGVsbGlwc2UgY3g9JzYwJyBjeT0nNjAnIHJ4PScxNCcgcnk9JzknLz48ZWxsaXBzZSBjeD0nNjAnIGN5PSc2MCcgcng9JzknIHJ5PScxNCcvPjxlbGxpcHNlIGN4PSc2MCcgY3k9JzIwJyByeD0nMTQnIHJ5PSc5Jy8+PGVsbGlwc2UgY3g9JzYwJyBjeT0nMjAnIHJ4PSc5JyByeT0nMTQnLz48ZWxsaXBzZSBjeD0nMjAnIGN5PSc2MCcgcng9JzE0JyByeT0nOScvPjxlbGxpcHNlIGN4PScyMCcgY3k9JzYwJyByeD0nOScgcnk9JzE0Jy8+PC9nPjxnIGZpbGw9JyNjOGIwODMnIG9wYWNpdHk9JzAuNSc+PGNpcmNsZSBjeD0nMjAnIGN5PScyMCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nNjAnIGN5PSc2MCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nNjAnIGN5PScyMCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nMjAnIGN5PSc2MCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nNDAnIGN5PSc0MCcgcj0nMS41Jy8+PC9nPjwvc3ZnPg==");
                 background-repeat: repeat;
             }
-            .print-maand:last-child {
+            /* Liggend (landscape): 1 maand per pagina, verticaal gecentreerd */
+            .mode-liggend .print-maand {
+                page-break-after: always;
+                break-after: page;
+                min-height: 185mm;
+            }
+            .mode-liggend .print-maand:last-child {
                 page-break-after: auto;
                 break-after: auto;
+            }
+            /* Staand (portrait): 2 maanden per pagina */
+            .mode-portret .print-maand {
+                min-height: 128mm;
+                padding: 2mm 0;
+            }
+            .mode-portret .print-maand:nth-child(even) {
+                page-break-after: always;
+                break-after: page;
+            }
+            .mode-portret .print-maand:nth-child(odd) {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+            .mode-portret .print-maand:last-child {
+                page-break-after: auto;
+                break-after: auto;
+            }
+            /* Compactere opmaak in staande modus zodat 2 maanden passen */
+            .mode-portret .pm-titel {
+                font-size: 12px;
+            }
+            .mode-portret .pm-grid td {
+                height: 46px;
+                font-size: 9px;
+            }
+            .mode-portret .pm-tanggal {
+                font-size: 13px;
+            }
+            .mode-portret .pm-srengat-koppen {
+                font-size: 9px;
             }
             /* Legenda bovenaan */
             .pm-legenda {
@@ -398,7 +432,8 @@
             <button onclick="goToDate()">Menyang Tanggal</button>
         </div>
         <div class="print-knop">
-            <button onclick="printKalender()">Print alle maanden (liggend)</button>
+            <button onclick="printKalender()">Print liggend (1 maand per pagina)</button>
+            <button onclick="printKalenderPortret()">Print staand (2 maanden per pagina)</button>
         </div>
         <div class="tijdzone-info">
             <p></p>
@@ -1011,14 +1046,41 @@
             </div>`;
         }
 
-        // Print alle 10 maanden van het momenteel getoonde Javaanse jaar, liggend
-        function printKalender() {
-            const printContainer = document.getElementById('printContainer');
+        // Stel de paginaoriëntatie/marges in via een apart style-element (overschrijft
+        // de statische @page-regel omdat het later in het document staat).
+        function zetPaginaOrientatie(paginaCss) {
+            let styleEl = document.getElementById('pageOrientation');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'pageOrientation';
+                document.head.appendChild(styleEl);
+            }
+            styleEl.textContent = paginaCss;
+        }
+
+        // Vul de printcontainer met alle 10 maanden van het getoonde Javaanse jaar
+        function vulPrintContainer(printContainer, modusKlasse) {
+            printContainer.className = modusKlasse;
             let html = '';
             for (let maand = 1; maand <= 10; maand++) {
                 html += genereerMaandPrintHTML(huidigJavaansJaar, maand);
             }
             printContainer.innerHTML = html;
+        }
+
+        // Liggend: 1 maand per pagina
+        function printKalender() {
+            const printContainer = document.getElementById('printContainer');
+            zetPaginaOrientatie('@page { size: A4 landscape; margin: 10mm 22mm; }');
+            vulPrintContainer(printContainer, 'mode-liggend');
+            window.print();
+        }
+
+        // Staand: 2 maanden per pagina
+        function printKalenderPortret() {
+            const printContainer = document.getElementById('printContainer');
+            zetPaginaOrientatie('@page { size: A4 portrait; margin: 12mm 14mm; }');
+            vulPrintContainer(printContainer, 'mode-portret');
             window.print();
         }
 
