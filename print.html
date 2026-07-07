@@ -243,6 +243,16 @@
                 page-break-after: always;
                 break-after: page;
                 page-break-inside: avoid;
+                /* Verticaal centreren op de liggende A4-pagina (hoogte minus marges) */
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                min-height: 185mm;
+                box-sizing: border-box;
+                /* Lichte batik-achtergrond (kawung-motief), ingesloten zodat het meeprint */
+                background-color: #faf6ec;
+                background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4MCcgaGVpZ2h0PSc4MCcgdmlld0JveD0nMCAwIDgwIDgwJz48ZyBmaWxsPSdub25lJyBzdHJva2U9JyNjOGIwODMnIHN0cm9rZS13aWR0aD0nMS4xJyBvcGFjaXR5PScwLjQ1Jz48ZWxsaXBzZSBjeD0nMjAnIGN5PScyMCcgcng9JzE0JyByeT0nOScvPjxlbGxpcHNlIGN4PScyMCcgY3k9JzIwJyByeD0nOScgcnk9JzE0Jy8+PGVsbGlwc2UgY3g9JzYwJyBjeT0nNjAnIHJ4PScxNCcgcnk9JzknLz48ZWxsaXBzZSBjeD0nNjAnIGN5PSc2MCcgcng9JzknIHJ5PScxNCcvPjxlbGxpcHNlIGN4PSc2MCcgY3k9JzIwJyByeD0nMTQnIHJ5PSc5Jy8+PGVsbGlwc2UgY3g9JzYwJyBjeT0nMjAnIHJ4PSc5JyByeT0nMTQnLz48ZWxsaXBzZSBjeD0nMjAnIGN5PSc2MCcgcng9JzE0JyByeT0nOScvPjxlbGxpcHNlIGN4PScyMCcgY3k9JzYwJyByeD0nOScgcnk9JzE0Jy8+PC9nPjxnIGZpbGw9JyNjOGIwODMnIG9wYWNpdHk9JzAuNSc+PGNpcmNsZSBjeD0nMjAnIGN5PScyMCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nNjAnIGN5PSc2MCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nNjAnIGN5PScyMCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nMjAnIGN5PSc2MCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nNDAnIGN5PSc0MCcgcj0nMS41Jy8+PC9nPjwvc3ZnPg==");
+                background-repeat: repeat;
             }
             .print-maand:last-child {
                 page-break-after: auto;
@@ -278,6 +288,9 @@
                 width: 100%;
                 border-collapse: collapse;
                 table-layout: fixed;
+                /* Licht doorschijnend wit onder het rooster: batik blijft zichtbaar,
+                   maar de tekst blijft goed leesbaar */
+                background-color: rgba(255, 255, 255, 0.55);
             }
             .pm-grid td,
             .pm-grid th {
