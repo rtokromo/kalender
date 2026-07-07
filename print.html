@@ -215,7 +215,8 @@
         @media print {
             @page {
                 size: A4 landscape;
-                margin: 8mm;
+                /* Ruimere zijmarges: kalender komt hierdoor in het midden van de pagina */
+                margin: 10mm 22mm;
             }
             /* Zorg dat achtergrondkleuren en markeringen daadwerkelijk meeprinten */
             * {
@@ -306,6 +307,12 @@
             /* Weekdag met speciale weton-combinatie in deze maand: rood label */
             .pm-weekdag-speciaal {
                 background-color: #a10000;
+            }
+            /* Weekdag-label verticaal in het midden van de cel (overschrijft de
+               algemene 'vertical-align: top' van de datacellen) */
+            .pm-grid td.pm-weekdag {
+                vertical-align: middle;
+                font-size: 11px;
             }
             .pm-leeg {
                 background: repeating-linear-gradient(
@@ -936,11 +943,6 @@
                     // Lokale schrijfwijze: "Pahing" wordt "Paing" (rekenlogica blijft ongewijzigd)
                     const pasaranWeergave = (pasaran === "Pahing") ? "Paing" : pasaran;
 
-                    const isHuidig =
-                        g.getUTCDate() === vDag &&
-                        g.getUTCMonth() + 1 === vMaand &&
-                        g.getUTCFullYear() === vJaar;
-
                     // Benoemde bijzondere dag (GOGONO SRENGAT) op deze tanggal?
                     const specDag = isSpecialeDag(maand, dag);
                     // Speciale Javaanse dag → rood dagnummer (zoals op het scherm)
@@ -959,7 +961,6 @@
 
                     const celKlassen = [];
                     if (specDag) celKlassen.push("pm-srengatdag");
-                    if (isHuidig) celKlassen.push("pm-vandaag");
 
                     gridHTML += `<td class="${celKlassen.join(" ")}">
                         <div class="pm-tanggal ${isSpecJavDag ? "pm-tanggal-speciaal" : ""}">${dag}</div>
