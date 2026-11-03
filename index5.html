@@ -20,7 +20,7 @@ button:hover{background:#482d13}.month{font-size:18px;font-weight:bold;min-width
 .week div{background:#5a3a1f;color:white;padding:8px 2px;text-align:center;border-radius:5px;font-size:12px;font-weight:bold}
 .cell{min-height:88px;padding:7px 4px;border:1px solid var(--line);border-radius:6px;background:var(--paper);text-align:center;font-size:12px}
 .cell.blank{border-color:transparent;background:transparent}.jday{font-size:16px;font-weight:bold}.pasaran{margin:4px 0}.greg{color:var(--muted);font-size:11px}
-.today{background:#dff1dc;border-color:#7da76f}.pech{color:#c62828;font-weight:bold}.special{outline:2px solid #d4a629;background:#fff7d8}
+.today{background:#dff1dc;border-color:#7da76f}.pech{color:#c62828;font-weight:bold}.special{outline:2px solid #d4a629;background:#fff7d8}.week div.pech-header{background:#c62828;color:#fff}
 .legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:12px 0;color:var(--muted);font-size:12px}
 .badge{display:inline-block;width:12px;height:12px;vertical-align:-2px;margin-right:4px;border:1px solid #999}
 .key{margin-top:14px;padding:12px;background:#f8f6f1;border-radius:8px;font-size:13px;line-height:1.5}
@@ -73,7 +73,7 @@ function weekdayCode(date){return weekdayCodes[new Date(date.getTime()+7*3600000
 function isToday(date){const n=new Date();return date.getUTCFullYear()===n.getFullYear()&&date.getUTCMonth()===n.getMonth()&&date.getUTCDate()===n.getDate()}
 function render(){
 document.getElementById("month").textContent=months[state.month-1]+" ("+state.month+")";document.getElementById("year").textContent="Koto: "+state.year;
-document.getElementById("week").innerHTML=weekHeaders.map(x=>"<div>"+x+"</div>").join("");
+document.getElementById("week").innerHTML=weekHeaders.map((x,i)=>{const wd=weekdays[i],marked=(pechCombos[state.month]||[]).some(entry=>entry[0]===wd);return "<div"+(marked?' class="pech-header"':"")+">"+x+"</div>"}).join("");
 const grid=document.getElementById("grid");grid.innerHTML="";const specials=[];
 const first=dateFor(state.year,state.month,1),start=new Date(first.getTime()+7*3600000).getUTCDay();
 for(let i=0;i<start;i++){const e=document.createElement("div");e.className="cell blank";grid.append(e)}
@@ -83,7 +83,8 @@ const combo=(pechCombos[state.month]||[]).some(x=>x[0]===wd&&x[1]===p.short);
 const isSrengatGusti=code==="HOD"&&p.short==="Kl";
 const namedDay=named[state.month]?.[d]||"";
 const specialMonthSeven=state.month===7&&isSrengatGusti;
-const specialLabel=namedDay||(specialMonthSeven?"SRENGAT GUSTI":"");\nif(namedDay||specialMonthSeven){specials.push({name:namedDay||"SRENGAT GUSTI",day:d,date:date.getUTCDate()+"-"+(date.getUTCMonth()+1)+"-"+date.getUTCFullYear()})}
+const specialLabel=namedDay||(specialMonthSeven?"SRENGAT GUSTI":"");
+if(namedDay||specialMonthSeven){specials.push({name:namedDay||"SRENGAT GUSTI",day:d,date:date.getUTCDate()+"-"+(date.getUTCMonth()+1)+"-"+date.getUTCFullYear()})}
 const cell=document.createElement("div");cell.className="cell"+(isToday(date)?" today":"")+(specialMonthSeven||namedDay?" special":"");
 const greg=date.getUTCDate()+"-"+(date.getUTCMonth()+1)+"-"+String(date.getUTCFullYear()).slice(-2);
 cell.innerHTML='<div class="jday '+((pechDays[state.month]||[]).includes(d)?"pech":"")+'">'+d+(specialLabel?'<br><small>'+specialLabel+'</small>':'')+'</div><div class="pasaran '+(combo?"pech":"")+'">'+p.short+' ('+p.value+')</div><div class="greg">'+greg+'</div>';
