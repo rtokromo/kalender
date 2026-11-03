@@ -990,8 +990,9 @@
             gridHTML += '</tbody></table>';
 
             // GOGONO SRENGAT-koppen (nu ONDERAAN), met de berekende Gregoriaanse datum
-            const koppen = [...(gogonoSrengatKoppen[maand] || [])];
+            let koppen = [...(gogonoSrengatKoppen[maand] || [])];
             if (maand === 7) {
+                koppen = koppen.filter(kop => !kop.includes("SRENGAT GUSTI"));
                 for (let tgl = 1; tgl <= dagenInMaand; tgl++) {
                     const gd = berekenGregoriaanseDatum(jaar, maand, tgl);
                     if (bepaalDagVanDeWeek(gd) === "Vr" && bepaalPasaran(gd) === "Kliwon") {
