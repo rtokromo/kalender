@@ -123,7 +123,7 @@ grid.append(cell)
 document.getElementById("specialTitle").textContent="Dina istimewa ing sasi iki — "+monthNames[view.month-1];
 const list=document.getElementById("specialList");list.replaceChildren();
 if(!specials.length){const li=document.createElement("li");li.className="muted";li.textContent="Ora ana dina istimewa ing sasi iki.";list.append(li)}
-else{specials.forEach(item=>{const li=document.createElement("li");li.textContent=item.name+" — Javaanse dag "+item.day+" — "+item.date;list.append(li)})}
+else{specials.forEach(item=>{const li=document.createElement("li");li.textContent=item.name+" — Tanggal "+item.day+" — "+item.date;list.append(li)})}
 }
 document.getElementById("previous").addEventListener("click",()=>{view.month--;if(view.month<1){view.month=10;view.year--}render()});
 document.getElementById("next").addEventListener("click",()=>{view.month++;if(view.month>10){view.month=1;view.year++}render()});
