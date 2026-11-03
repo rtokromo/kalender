@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#69431f">
+<title>Javaanse Kalender — v6</title>
+<style>
+:root{color-scheme:light;--brown:#69431f;--brown-dark:#4a2e14;--line:#d9c6a9;--paper:#fffdf8;--bg:#f3efe6;--text:#352b21;--muted:#74695d;--red:#bd2929;--green:#e2f2df;--yellow:#fff4ce}
+*{box-sizing:border-box}
+body{margin:0;padding:clamp(10px,3vw,28px);background:var(--bg);color:var(--text);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:900px;margin:0 auto}
+header{text-align:center;margin:0 0 18px}
+h1{font-size:clamp(1.55rem,5vw,2.2rem);margin:0;color:var(--brown)}
+.subtitle{margin:4px 0 0;color:var(--muted);font-size:.94rem}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 5px 18px #38230d12;padding:clamp(12px,3vw,22px)}
+.toolbar{display:grid;grid-template-columns:48px 1fr 48px;align-items:center;gap:10px}
+button{min-height:44px;border:0;border-radius:9px;background:var(--brown);color:#fff;font:inherit;font-weight:650;cursor:pointer}
+button:hover{background:var(--brown-dark)}
+button:focus-visible,input:focus-visible{outline:3px solid #d9a92e;outline-offset:2px}
+.arrow{font-size:1.35rem}
+.month-title{text-align:center;font-size:clamp(1rem,4vw,1.28rem);font-weight:750;color:var(--brown)}
+.year{text-align:center;font-weight:700;margin:8px 0 16px}
+.week,.calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:clamp(3px,1vw,8px)}
+.week{margin-bottom:6px}
+.week div{padding:8px 2px;border-radius:7px;background:#5a3a1f;color:#fff;text-align:center;font-size:clamp(.62rem,2.3vw,.85rem);font-weight:700}
+.week .pech-head{background:var(--red)}
+.day{min-width:0;min-height:clamp(76px,14vw,112px);padding:6px 2px;border:1px solid var(--line);border-radius:8px;background:var(--paper);text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:flex-start}
+.day.empty{border-color:transparent;background:transparent}
+.day.today{background:var(--green);border-color:#6f9c62}
+.day.special{background:var(--yellow);border-color:#d3a529;box-shadow:inset 0 0 0 1px #d3a529}
+.day-number{font-size:clamp(.85rem,3.5vw,1.08rem);font-weight:750;line-height:1.15}
+.day-number.pech,.pasaran.pech{color:var(--red);font-weight:800}
+.pasaran{margin-top:5px;font-size:clamp(.68rem,2.7vw,.88rem);font-weight:650}
+.date{margin-top:4px;color:var(--muted);font-size:clamp(.58rem,2.2vw,.75rem)}
+.special-name{margin-top:3px;color:#705215;font-size:clamp(.52rem,1.9vw,.68rem);font-weight:750;line-height:1.1;overflow-wrap:anywhere}
+.special-list{margin-top:18px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#fffdf8}
+.special-list h2{font-size:1rem;color:var(--brown);margin:0 0 8px}
+.special-list ul{margin:0;padding-left:20px}
+.special-list li{margin:4px 0}
+.muted{color:var(--muted);font-size:.9rem}
+.controls{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px;margin-top:16px}
+.controls input{min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit}
+.controls button{padding:8px 14px;font-size:.93rem}
+.legend{display:flex;justify-content:center;flex-wrap:wrap;gap:10px 18px;margin:14px 0 2px;color:var(--muted);font-size:.83rem}
+.legend strong{color:var(--red)}
+.note{margin:14px 0 0;color:var(--muted);font-size:.8rem;text-align:center}
+@media(max-width:420px){body{padding:8px}.card{padding:10px}.toolbar{grid-template-columns:44px 1fr 44px;gap:6px}.day{min-height:70px;padding-top:5px}.week div{padding:7px 0}.special-list{padding:10px}}
+@media(min-width:700px){.day{min-height:105px}}
+</style>
+</head>
+<body>
+<main>
+<header><h1>Javaanse Kalender</h1><p class="subtitle">Kalenderberekening — testversie 6</p></header>
+<section class="card" aria-label="Javaanse kalender">
+<div class="toolbar">
+<button class="arrow" id="previous" type="button" aria-label="Vorige maand">‹</button>
+<div class="month-title" id="monthTitle"></div>
+<button class="arrow" id="next" type="button" aria-label="Volgende maand">›</button>
+</div>
+<div class="year" id="yearTitle"></div>
+<div class="week" id="weekHeader"></div>
+<div class="calendar" id="calendar" aria-live="polite"></div>
+<section class="special-list" aria-live="polite">
+<h2 id="specialTitle">Bijzondere dagen deze maand</h2>
+<ul id="specialList"></ul>
+</section>
+<div class="legend">
+<span>Groen: vandaag</span><span>Geel: benoemde bijzondere dag</span><strong>Rood: pechdag</strong>
+</div>
+<div class="controls">
+<input type="date" id="datePicker" aria-label="Kies een Gregoriaanse datum">
+<button type="button" id="goDate">Ga naar datum</button>
+</div>
+<p class="note">De Javaanse kalenderregels en jaarankers zijn testgegevens; vergelijk ze met de kalenderbron.</p>
+</section>
+</main>
+<script>
+"use strict";
+const monthNames=["Koso Soworo","Pobo","Mono","Somo","Poko","Bowoko","Pono","Woko","Sono","Noto"];
+const weekdayNames=["Zo","Ma","Di","Wo","Do","Vr","Za"];
+const weekdayCodes=["DOT","GOT","GOS","JOS","JOH","HOD","WOR"];
+const weekLabels=["DOT (5)","GOT (4)","GOS (3)","JOS (7)","JOH (8)","HOD (6)","WOR (9)"];
+const pasaran=[{name:"Legi",short:"Lg",value:5},{name:"Pahing",short:"Pa",value:9},{name:"Pon",short:"Po",value:7},{name:"Wage",short:"Wa",value:4},{name:"Kliwon",short:"Kl",value:8}];
+// Bestaande Gregoriaanse ankers uit index.html; valideren met de kalenderbron.
+const anchors=[{date:Date.UTC(2023,7,5),year:6449},{date:Date.UTC(1975,11,20),year:6400}];
+const DAY_MS=86400000,YEAR_DAYS=355;
+const pechDays={1:[1,11,21,31],2:[2,12,22,32],3:[3,13,23,33],4:[4,14,24,34],5:[5,15,25,35],6:[6,16,26],7:[7,17,27],8:[8,18,28],9:[9,19,29],10:[10,20,30]};
+const pechCombos={1:[["Ma","Lg"],["Di","Wa"],["Do","Pa"],["Vr","Kl"]],2:[["Di","Kl"],["Wo","Po"],["Vr","Lg"],["Za","Wa"]],3:[["Zo","Po"],["Wo","Pa"],["Do","Wa"],["Za","Kl"]],4:[["Zo","Wa"],["Ma","Pa"],["Do","Po"],["Vr","Lg"]],5:[["Ma","Po"],["Di","Lg"],["Vr","Pa"],["Za","Pa"]],6:[["Zo","Wa"],["Wo","Kl"],["Za","Lg"]],7:[["Zo","Wa"],["Ma","Pa"],["Do","Po"]],8:[["Ma","Pa"],["Di","Kl"],["Vr","Lg"]],9:[["Di","Kl"],["Wo","Po"],["Za","Wa"]],10:[["Zo","Pa"],["Wo","Po"],["Do","Lg"]]};
+const namedDays={1:{1:"HOSORO",36:"PANGENEP"},4:{8:"PANGAPES"},5:{15:"PANJEPI"},7:{21:"PROLOJO MODJO"},8:{7:"PAMUKAS",12:"PAMUKAS II",16:"KAHURIPAN"}};
+let view;
+function monthLength(month){return month%2===1?36:35}
+function offsetInYear(month,day){let total=day-1;for(let m=1;m<month;m++)total+=monthLength(m);return total}
+function anchorForYear(year){return year>=anchors[0].year?anchors[0]:anchors[1]}
+function gregorianFor(year,month,day){const a=anchorForYear(year);return new Date(a.date+(year-a.year)*YEAR_DAYS*DAY_MS+offsetInYear(month,day)*DAY_MS)}
+function javaDateFor(gregDate){const timestamp=Date.UTC(gregDate.getUTCFullYear(),gregDate.getUTCMonth(),gregDate.getUTCDate());const a=timestamp>=anchors[0].date?anchors[0]:anchors[1];const total=Math.floor((timestamp-a.date)/DAY_MS);const year=a.year+Math.floor(total/YEAR_DAYS);let offset=((total%YEAR_DAYS)+YEAR_DAYS)%YEAR_DAYS;let month=1;while(offset>=monthLength(month)){offset-=monthLength(month);month++}return{year,month,day:offset+1}}
+function pasaranFor(month,day){return pasaran[(2+offsetInYear(month,day))%5]}
+function weekdayFor(date){return weekdayNames[new Date(date.getTime()+7*3600000).getUTCDay()]}
+function weekdayCodeFor(date){return weekdayCodes[new Date(date.getTime()+7*3600000).getUTCDay()]}
+function sameLocalDate(date){const now=new Date();return date.getUTCFullYear()===now.getFullYear()&&date.getUTCMonth()===now.getMonth()&&date.getUTCDate()===now.getDate()}
+function render(){
+document.getElementById("monthTitle").textContent=monthNames[view.month-1]+" ("+view.month+")";
+document.getElementById("yearTitle").textContent="Koto: "+view.year;
+document.getElementById("weekHeader").innerHTML=weekLabels.map((label,index)=>{const hasPech=(pechCombos[view.month]||[]).some(item=>item[0]===weekdayNames[index]);return '<div'+(hasPech?' class="pech-head"':"")+'>'+label+"</div>"}).join("");
+const grid=document.getElementById("calendar");grid.replaceChildren();
+const specials=[];
+const firstDate=gregorianFor(view.year,view.month,1);
+const leading=new Date(firstDate.getTime()+7*3600000).getUTCDay();
+for(let i=0;i<leading;i++){const blank=document.createElement("div");blank.className="day empty";blank.setAttribute("aria-hidden","true");grid.append(blank)}
+for(let day=1;day<=monthLength(view.month);day++){
+const date=gregorianFor(view.year,view.month,day),p=pasaranFor(view.month,day),weekday=weekdayFor(date),weekdayCode=weekdayCodeFor(date);
+const combo=(pechCombos[view.month]||[]).some(item=>item[0]===weekday&&item[1]===p.short);
+const srengatGusti=weekdayCode==="HOD"&&p.short==="Kl";
+const named=namedDays[view.month]?.[day]||"";
+const special=Boolean(named)||(view.month===7&&srengatGusti);
+const specialName=named||(special?"SRENGAT GUSTI":"");
+if(special)specials.push({name:specialName,day,date:date.getUTCDate()+"-"+(date.getUTCMonth()+1)+"-"+date.getUTCFullYear()});
+const cell=document.createElement("div");cell.className="day"+(sameLocalDate(date)?" today":"")+(special?" special":"");
+const number=document.createElement("div");number.className="day-number"+((pechDays[view.month]||[]).includes(day)?" pech":"");number.textContent=day;cell.append(number);
+if(specialName){const label=document.createElement("div");label.className="special-name";label.textContent=specialName;cell.append(label)}
+const pasaranLine=document.createElement("div");pasaranLine.className="pasaran"+(combo?" pech":"");pasaranLine.textContent=p.short+" ("+p.value+")";cell.append(pasaranLine);
+const dateLine=document.createElement("div");dateLine.className="date";dateLine.textContent=date.getUTCDate()+"-"+(date.getUTCMonth()+1)+"-"+String(date.getUTCFullYear()).slice(-2);cell.append(dateLine);
+cell.title=weekdayCode+" / "+p.name+(srengatGusti?" — Srengat Gusti":"")+(special?" — bijzondere dag":"");
+grid.append(cell)
+}
+document.getElementById("specialTitle").textContent="Bijzondere dagen deze maand — "+monthNames[view.month-1];
+const list=document.getElementById("specialList");list.replaceChildren();
+if(!specials.length){const li=document.createElement("li");li.className="muted";li.textContent="Geen benoemde bijzondere dagen in deze maand.";list.append(li)}
+else{specials.forEach(item=>{const li=document.createElement("li");li.textContent=item.name+" — Javaanse dag "+item.day+" — "+item.date;list.append(li)})}
+}
+document.getElementById("previous").addEventListener("click",()=>{view.month--;if(view.month<1){view.month=10;view.year--}render()});
+document.getElementById("next").addEventListener("click",()=>{view.month++;if(view.month>10){view.month=1;view.year++}render()});
+document.getElementById("goDate").addEventListener("click",()=>{const value=document.getElementById("datePicker").value;if(!value){alert("Kies eerst een datum.");return}view=javaDateFor(new Date(value+"T00:00:00Z"));render()});
+const now=new Date();view=javaDateFor(new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())));render();
+</script>
+</body>
+</html>
