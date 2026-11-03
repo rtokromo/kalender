@@ -89,7 +89,13 @@ const cell=document.createElement("div");cell.className="cell"+(isToday(date)?" 
 const greg=date.getUTCDate()+"-"+(date.getUTCMonth()+1)+"-"+String(date.getUTCFullYear()).slice(-2);
 cell.innerHTML='<div class="jday '+((pechDays[state.month]||[]).includes(d)?"pech":"")+'">'+d+(specialLabel?'<br><small>'+specialLabel+'</small>':'')+'</div><div class="pasaran '+(combo?"pech":"")+'">'+p.short+' ('+p.value+')</div><div class="greg">'+greg+'</div>';
 cell.title=code+" / "+p.name+(isSrengatGusti?" · Srengat Gusti":"")+(specialMonthSeven?" · speciale dag":"");grid.append(cell)
-}}
+}
+const specialList=document.getElementById("testSpecialsList");
+document.getElementById("testSpecialsTitle").textContent="Bijzondere dagen deze maand — "+months[state.month-1];
+specialList.replaceChildren();
+if(!specials.length){const li=document.createElement("li");li.className="empty";li.textContent="Geen benoemde bijzondere dagen in deze maand.";specialList.append(li)}
+else{specials.forEach(item=>{const li=document.createElement("li");li.textContent=item.name+" — Javaanse dag "+item.day+" — "+item.date;specialList.append(li)})}
+}
 document.getElementById("prev").onclick=()=>{if(--state.month<1){state.month=10;state.year--}render()};
 document.getElementById("next").onclick=()=>{if(++state.month>10){state.month=1;state.year++}render()};
 document.getElementById("go").onclick=()=>{const value=document.getElementById("datePicker").value;if(!value){alert("Kies eerst een datum.");return}state=fromDate(new Date(value+"T00:00:00Z"));render()};
