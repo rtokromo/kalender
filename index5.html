@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Javaanse Kalender — vergelijking v5</title>
+<style>
+:root{--brown:#69431f;--line:#d8c4a5;--paper:#fffdf7;--bg:#f1eee6;--muted:#776b5c}
+*{box-sizing:border-box}body{margin:0;padding:20px;background:var(--bg);color:#33291f;font:15px Arial,sans-serif}
+h1{text-align:center;color:var(--brown);margin:4px 0 8px}.intro{text-align:center;color:var(--muted);margin:0 0 18px}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:16px;max-width:1500px;margin:auto}
+.panel{background:white;border:1px solid var(--line);border-radius:12px;overflow:hidden;min-width:0;box-shadow:0 3px 12px #0000000c}
+.panel h2{font-size:18px;margin:0;padding:14px 16px;background:#f8f2e8;color:var(--brown);border-bottom:1px solid var(--line)}
+iframe{width:100%;height:860px;border:0;background:white}
+.new-panel{padding:16px}.toolbar{display:flex;justify-content:center;align-items:center;gap:14px;margin-bottom:12px}
+button{border:0;border-radius:7px;background:var(--brown);color:white;padding:9px 14px;font-size:18px;cursor:pointer}
+button:hover{background:#482d13}.month{font-size:18px;font-weight:bold;min-width:170px;text-align:center}
+.year{text-align:center;margin:8px 0 14px;font-weight:bold}
+.week,.grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}
+.week div{background:#5a3a1f;color:white;padding:8px 2px;text-align:center;border-radius:5px;font-size:12px;font-weight:bold}
+.cell{min-height:88px;padding:7px 4px;border:1px solid var(--line);border-radius:6px;background:var(--paper);text-align:center;font-size:12px}
+.cell.blank{border-color:transparent;background:transparent}.jday{font-size:16px;font-weight:bold}.pasaran{margin:4px 0}.greg{color:var(--muted);font-size:11px}
+.today{background:#dff1dc;border-color:#7da76f}.pech{color:#c62828;font-weight:bold}.special{outline:2px solid #d4a629;background:#fff7d8}
+.legend{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:12px 0;color:var(--muted);font-size:12px}
+.badge{display:inline-block;width:12px;height:12px;vertical-align:-2px;margin-right:4px;border:1px solid #999}
+.key{margin-top:14px;padding:12px;background:#f8f6f1;border-radius:8px;font-size:13px;line-height:1.5}
+.goto{display:flex;justify-content:center;gap:8px;margin:14px 0}.goto input{padding:8px;border:1px solid var(--line);border-radius:6px}
+.small{color:var(--muted);font-size:12px;text-align:center}
+@media(max-width:900px){.compare{grid-template-columns:1fr}.panel:first-child{order:2}.panel:last-child{order:1}iframe{height:700px}}
+@media(max-width:480px){body{padding:10px}.cell{min-height:72px;padding:5px 1px;font-size:10px}.week{gap:3px}.grid{gap:3px}.week div{font-size:10px}.greg{font-size:9px}}
+</style>
+</head>
+<body>
+<h1>Javaanse Kalender — test v5</h1>
+<p class="intro">Vergelijk de bestaande kalender met de aangepaste dag- en Pasaranlogica.</p>
+<main class="compare">
+<section class="panel"><h2>Bestaande versie — index.html</h2><iframe title="Bestaande kalender" src="index.html"></iframe></section>
+<section class="panel"><h2>Testversie — nieuwe berekening</h2><div class="new-panel">
+<div class="toolbar"><button id="prev" aria-label="Vorige maand">←</button><div class="month" id="month"></div><button id="next" aria-label="Volgende maand">→</button></div>
+<div class="year" id="year"></div>
+<div class="week" id="week"></div><div class="grid" id="grid"></div>
+<div class="legend"><span><i class="badge" style="background:#dff1dc"></i>Vandaag</span><span><i class="badge" style="background:#fff7d8"></i>Benoemde bijzondere dag</span><span style="color:#c62828;font-weight:bold">Rood = bestaande pechdagregel</span></div>
+<div class="goto"><input type="date" id="datePicker"><button id="go" style="font-size:14px">Ga naar datum</button></div>
+<div class="key"><strong>Rekenregels testversie</strong><br>
+• 10 maanden; oneven maanden 36 dagen, even maanden 35 dagen (355 dagen per jaar).<br>
+• Pasaran begint op dag 1 van elk Javaans jaar met Pon en loopt door: Legi → Pahing → Pon → Wage → Kliwon.<br>
+• De twee bestaande pechdaglijsten blijven als vaste gegevens behouden; hun regels worden niet afgeleid.<br>
+• Jaarankers voor de Gregoriaanse omzetting zijn overgenomen uit index.html en moeten nog met jouw kalender worden gevalideerd.</div>
+<p class="small">Testversie; bedoeld voor visuele vergelijking. De bestaande index.html wordt niet gewijzigd.</p>
+</div></section>
+</main>
+<script>
+"use strict";
+const months=["Koso Soworo","Pobo","Mono","Somo","Poko","Bowoko","Pono","Woko","Sono","Noto"];
+const weekdays=["Zo","Ma","Di","Wo","Do","Vr","Za"];
+const weekHeaders=["DOT (5)","GOT (4)","GOS (3)","JOS (7)","JOH (8)","HOD (6)","WOR (9)"];
+const pasaran=[{name:"Legi",short:"Lg",value:5},{name:"Pahing",short:"Pa",value:9},{name:"Pon",short:"Po",value:7},{name:"Wage",short:"Wa",value:4},{name:"Kliwon",short:"Kl",value:8}];
+// Vaste dag-1-ankers uit de huidige index.html; wijzig pas na bronvalidatie.
+const anchors=[{date:Date.UTC(2023,7,5),year:6449},{date:Date.UTC(1975,11,20),year:6400}];
+const yearLength=355, DAY=86400000;
+const pechDays={1:[1,11,21,31],2:[2,12,22,32],3:[3,13,23,33],4:[4,14,24,34],5:[5,15,25,35],6:[6,16,26],7:[7,17,27],8:[8,18,28],9:[9,19,29],10:[10,20,30]};
+const pechCombos={1:[["Ma","Lg"],["Di","Wa"],["Do","Pa"],["Vr","Kl"]],2:[["Di","Kl"],["Wo","Po"],["Vr","Lg"],["Za","Wa"]],3:[["Zo","Po"],["Wo","Pa"],["Do","Wa"],["Za","Kl"]],4:[["Zo","Wa"],["Ma","Pa"],["Do","Po"],["Vr","Lg"]],5:[["Ma","Po"],["Di","Lg"],["Vr","Pa"],["Za","Pa"]],6:[["Zo","Wa"],["Wo","Kl"],["Za","Lg"]],7:[["Zo","Wa"],["Ma","Pa"],["Do","Po"]],8:[["Ma","Pa"],["Di","Kl"],["Vr","Lg"]],9:[["Di","Kl"],["Wo","Po"],["Za","Wa"]],10:[["Zo","Pa"],["Wo","Po"],["Do","Lg"]]};
+const named={1:{1:"HOSORO",36:"PANGENEP"},4:{8:"PANGAPES"},5:{15:"PANJEPI"},7:{21:"PROLOJO MODJO"},8:{7:"PAMUKAS",12:"PAMUKAS II",16:"KAHURIPAN"}};
+const namedCombos=[{month:7,weekday:"Vr",pasaran:"Kl",name:"SRENGAT GUSTI"}];
+let state;
+function monthLength(m){return m%2===1?36:35}
+function dayOffset(m,d){let n=d-1;for(let x=1;x<m;x++)n+=monthLength(x);return n}
+function dateFor(y,m,d){const a=y>=anchors[0].year?anchors[0]:anchors[1];return new Date(a.date+(y-a.year)*yearLength*DAY+dayOffset(m,d)*DAY)}
+function fromDate(date){const t=Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate());const a=t>=anchors[0].date?anchors[0]:anchors[1];let offset=Math.floor((t-a.date)/DAY);let year=a.year+Math.floor(offset/yearLength);offset=((offset%yearLength)+yearLength)%yearLength;let m=1;while(offset>=monthLength(m)){offset-=monthLength(m);m++}return{year,month:m,day:offset+1}}
+function pasaranFor(y,m,d){const index=(2+dayOffset(m,d))%5;return pasaran[index]}
+function weekdayFor(date){return weekdays[new Date(date.getTime()+7*3600000).getUTCDay()]}
+function isToday(date){const n=new Date();return date.getUTCFullYear()===n.getFullYear()&&date.getUTCMonth()===n.getMonth()&&date.getUTCDate()===n.getDate()}
+function render(){document.getElementById("month").textContent=months[state.month-1]+" ("+state.month+")";document.getElementById("year").textContent="Koto: "+state.year;
+const wh=document.getElementById("week");wh.innerHTML=weekHeaders.map(x=>"<div>"+x+"</div>").join("");
+const grid=document.getElementById("grid");grid.innerHTML="";
+const first=dateFor(state.year,state.month,1);const start=new Date(first.getTime()+7*3600000).getUTCDay();
+for(let i=0;i<start;i++){const e=document.createElement("div");e.className="cell blank";grid.append(e)}
+for(let d=1;d<=monthLength(state.month);d++){const date=dateFor(state.year,state.month,d),p=pasaranFor(state.year,state.month,d),wd=weekdayFor(date);
+const combo=(pechCombos[state.month]||[]).some(x=>x[0]===wd&&x[1]===p.short);
+const special=named[state.month]?.[d]||namedCombos.find(x=>x.month===state.month&&x.weekday===wd&&x.pasaran===p.short)?.name||"";
+const cell=document.createElement("div");cell.className="cell"+(isToday(date)?" today":"")+(special?" special":"");
+const greg=date.getUTCDate()+"-"+(date.getUTCMonth()+1)+"-"+String(date.getUTCFullYear()).slice(-2);
+cell.innerHTML='<div class="jday '+((pechDays[state.month]||[]).includes(d)?"pech":"")+'">'+d+(special?'<br><small>'+special+'</small>':'')+'</div><div class="pasaran '+(combo?"pech":"")+'">'+p.short+' ('+p.value+')</div><div class="greg">'+greg+'</div>';
+cell.title=weekdays[wd==="Zo"?0:weekdays.indexOf(wd)]+" · "+p.name+(special?" · "+special:"");grid.append(cell)}
+}
+document.getElementById("prev").onclick=()=>{if(--state.month<1){state.month=10;state.year--}render()};
+document.getElementById("next").onclick=()=>{if(++state.month>10){state.month=1;state.year++}render()};
+document.getElementById("go").onclick=()=>{const value=document.getElementById("datePicker").value;if(!value){alert("Kies eerst een datum.");return}state=fromDate(new Date(value+"T00:00:00Z"));render()};
+state=fromDate(new Date(Date.UTC(new Date().getFullYear(),new Date().getMonth(),new Date().getDate())));render();
+</script>
+</body></html>
