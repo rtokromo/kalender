@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="jv">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#69431f">
-<title>Javaanse Kalender — v6</title>
+<title>Kalender Jawa</title>
 <style>
 :root{color-scheme:light;--brown:#69431f;--brown-dark:#4a2e14;--line:#d9c6a9;--paper:#fffdf8;--bg:#f3efe6;--text:#352b21;--muted:#74695d;--red:#bd2929;--green:#e2f2df;--yellow:#fff4ce}
 *{box-sizing:border-box}
@@ -51,28 +51,28 @@ button:focus-visible,input:focus-visible{outline:3px solid #d9a92e;outline-offse
 </head>
 <body>
 <main>
-<header><h1>Javaanse Kalender</h1><p class="subtitle">Kalenderberekening — testversie 6</p></header>
-<section class="card" aria-label="Javaanse kalender">
+<header><h1>Kalender Jawa</h1><p class="subtitle" lang="nl">Javaanse kalender</p></header>
+<section class="card" aria-label="Kalender Jawa">
 <div class="toolbar">
-<button class="arrow" id="previous" type="button" aria-label="Vorige maand">‹</button>
+<button class="arrow" id="previous" type="button" aria-label="Sasi sadurunge">‹</button>
 <div class="month-title" id="monthTitle"></div>
-<button class="arrow" id="next" type="button" aria-label="Volgende maand">›</button>
+<button class="arrow" id="next" type="button" aria-label="Sasi sabanjure">›</button>
 </div>
 <div class="year" id="yearTitle"></div>
 <div class="week" id="weekHeader"></div>
 <div class="calendar" id="calendar" aria-live="polite"></div>
 <section class="special-list" aria-live="polite">
-<h2 id="specialTitle">Bijzondere dagen deze maand</h2>
+<h2 id="specialTitle">Dina istimewa ing sasi iki</h2>
 <ul id="specialList"></ul>
 </section>
 <div class="legend">
 <span>Groen: vandaag</span><span>Geel: benoemde bijzondere dag</span><strong>Rood: pechdag</strong>
 </div>
 <div class="controls">
-<input type="date" id="datePicker" aria-label="Kies een Gregoriaanse datum">
-<button type="button" id="goDate">Ga naar datum</button>
+<input type="date" id="datePicker" aria-label="Pilih tanggal Masehi">
+<button type="button" id="goDate">Pilih tanggal</button>
 </div>
-<p class="note">De Javaanse kalenderregels en jaarankers zijn testgegevens; vergelijk ze met de kalenderbron.</p>
+
 </section>
 </main>
 <script>
@@ -100,7 +100,7 @@ function weekdayCodeFor(date){return weekdayCodes[new Date(date.getTime()+7*3600
 function sameLocalDate(date){const now=new Date();return date.getUTCFullYear()===now.getFullYear()&&date.getUTCMonth()===now.getMonth()&&date.getUTCDate()===now.getDate()}
 function render(){
 document.getElementById("monthTitle").textContent=monthNames[view.month-1]+" ("+view.month+")";
-document.getElementById("yearTitle").textContent="Koto: "+view.year;
+document.getElementById("yearTitle").textContent="Taun Jawa: "+view.year;
 document.getElementById("weekHeader").innerHTML=weekLabels.map((label,index)=>{const hasPech=(pechCombos[view.month]||[]).some(item=>item[0]===weekdayNames[index]);return '<div'+(hasPech?' class="pech-head"':"")+'>'+label+"</div>"}).join("");
 const grid=document.getElementById("calendar");grid.replaceChildren();
 const specials=[];
@@ -123,14 +123,14 @@ const dateLine=document.createElement("div");dateLine.className="date";dateLine.
 cell.title=weekdayCode+" / "+p.name+(srengatGusti?" — Srengat Gusti":"")+(special?" — bijzondere dag":"");
 grid.append(cell)
 }
-document.getElementById("specialTitle").textContent="Bijzondere dagen deze maand — "+monthNames[view.month-1];
+document.getElementById("specialTitle").textContent="Dina istimewa ing sasi iki — "+monthNames[view.month-1];
 const list=document.getElementById("specialList");list.replaceChildren();
-if(!specials.length){const li=document.createElement("li");li.className="muted";li.textContent="Geen benoemde bijzondere dagen in deze maand.";list.append(li)}
+if(!specials.length){const li=document.createElement("li");li.className="muted";li.textContent="Ora ana dina istimewa ing sasi iki.";list.append(li)}
 else{specials.forEach(item=>{const li=document.createElement("li");li.textContent=item.name+" — Javaanse dag "+item.day+" — "+item.date;list.append(li)})}
 }
 document.getElementById("previous").addEventListener("click",()=>{view.month--;if(view.month<1){view.month=10;view.year--}render()});
 document.getElementById("next").addEventListener("click",()=>{view.month++;if(view.month>10){view.month=1;view.year++}render()});
-document.getElementById("goDate").addEventListener("click",()=>{const value=document.getElementById("datePicker").value;if(!value){alert("Kies eerst een datum.");return}view=javaDateFor(new Date(value+"T00:00:00Z"));render()});
+document.getElementById("goDate").addEventListener("click",()=>{const value=document.getElementById("datePicker").value;if(!value){alert("Mangga pilih tanggal dhisik.");return}view=javaDateFor(new Date(value+"T00:00:00Z"));render()});
 const now=new Date();view=javaDateFor(new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())));render();
 </script>
 </body>
