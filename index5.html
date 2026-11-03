@@ -39,12 +39,13 @@ button:hover{background:#482d13}.month{font-size:18px;font-weight:bold;min-width
 <div class="toolbar"><button id="prev" aria-label="Vorige maand">←</button><div class="month" id="month"></div><button id="next" aria-label="Volgende maand">→</button></div>
 <div class="year" id="year"></div>
 <div class="week" id="week"></div><div class="grid" id="grid"></div>
-<div class="legend"><span><i class="badge" style="background:#dff1dc"></i>Vandaag</span><span><i class="badge" style="background:#fff7d8"></i>Benoemde bijzondere dag</span><span style="color:#c62828;font-weight:bold">Rood = bestaande pechdagregel</span></div>
+<div class="legend"><span><i class="badge" style="background:#dff1dc"></i>Vandaag</span><span><i class="badge" style="background:#fff7d8"></i>Speciale dag, alleen in maand 7</span><span style="color:#c62828;font-weight:bold">Rood = vaste pechdagregel</span></div>
 <div class="goto"><input type="date" id="datePicker"><button id="go" style="font-size:14px">Ga naar datum</button></div>
 <div class="key"><strong>Rekenregels testversie</strong><br>
 • 10 maanden; oneven maanden 36 dagen, even maanden 35 dagen (355 dagen per jaar).<br>
 • Pasaran begint op dag 1 van elk Javaans jaar met Pon en loopt door: Legi → Pahing → Pon → Wage → Kliwon.<br>
-• De twee bestaande pechdaglijsten blijven als vaste gegevens behouden; hun regels worden niet afgeleid.<br>
+• HOD + Kliwon heet Srengat Gusti; alleen in maand 7 wordt deze combinatie als speciale dag gemarkeerd.<br>
+• De pechdaglijsten blijven vaste gegevens; hun regels worden niet afgeleid.<br>
 • Jaarankers voor de Gregoriaanse omzetting zijn overgenomen uit index.html en moeten nog met jouw kalender worden gevalideerd.</div>
 <p class="small">Testversie; bedoeld voor visuele vergelijking. De bestaande index.html wordt niet gewijzigd.</p>
 </div></section>
@@ -53,36 +54,41 @@ button:hover{background:#482d13}.month{font-size:18px;font-weight:bold;min-width
 "use strict";
 const months=["Koso Soworo","Pobo","Mono","Somo","Poko","Bowoko","Pono","Woko","Sono","Noto"];
 const weekdays=["Zo","Ma","Di","Wo","Do","Vr","Za"];
+const weekdayCodes=["DOT","GOT","GOS","JOS","JOH","HOD","WOR"];
 const weekHeaders=["DOT (5)","GOT (4)","GOS (3)","JOS (7)","JOH (8)","HOD (6)","WOR (9)"];
 const pasaran=[{name:"Legi",short:"Lg",value:5},{name:"Pahing",short:"Pa",value:9},{name:"Pon",short:"Po",value:7},{name:"Wage",short:"Wa",value:4},{name:"Kliwon",short:"Kl",value:8}];
-// Vaste dag-1-ankers uit de huidige index.html; wijzig pas na bronvalidatie.
 const anchors=[{date:Date.UTC(2023,7,5),year:6449},{date:Date.UTC(1975,11,20),year:6400}];
 const yearLength=355, DAY=86400000;
 const pechDays={1:[1,11,21,31],2:[2,12,22,32],3:[3,13,23,33],4:[4,14,24,34],5:[5,15,25,35],6:[6,16,26],7:[7,17,27],8:[8,18,28],9:[9,19,29],10:[10,20,30]};
 const pechCombos={1:[["Ma","Lg"],["Di","Wa"],["Do","Pa"],["Vr","Kl"]],2:[["Di","Kl"],["Wo","Po"],["Vr","Lg"],["Za","Wa"]],3:[["Zo","Po"],["Wo","Pa"],["Do","Wa"],["Za","Kl"]],4:[["Zo","Wa"],["Ma","Pa"],["Do","Po"],["Vr","Lg"]],5:[["Ma","Po"],["Di","Lg"],["Vr","Pa"],["Za","Pa"]],6:[["Zo","Wa"],["Wo","Kl"],["Za","Lg"]],7:[["Zo","Wa"],["Ma","Pa"],["Do","Po"]],8:[["Ma","Pa"],["Di","Kl"],["Vr","Lg"]],9:[["Di","Kl"],["Wo","Po"],["Za","Wa"]],10:[["Zo","Pa"],["Wo","Po"],["Do","Lg"]]};
 const named={1:{1:"HOSORO",36:"PANGENEP"},4:{8:"PANGAPES"},5:{15:"PANJEPI"},7:{21:"PROLOJO MODJO"},8:{7:"PAMUKAS",12:"PAMUKAS II",16:"KAHURIPAN"}};
-const namedCombos=[{month:7,weekday:"Vr",pasaran:"Kl",name:"SRENGAT GUSTI"}];
 let state;
 function monthLength(m){return m%2===1?36:35}
 function dayOffset(m,d){let n=d-1;for(let x=1;x<m;x++)n+=monthLength(x);return n}
 function dateFor(y,m,d){const a=y>=anchors[0].year?anchors[0]:anchors[1];return new Date(a.date+(y-a.year)*yearLength*DAY+dayOffset(m,d)*DAY)}
 function fromDate(date){const t=Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate());const a=t>=anchors[0].date?anchors[0]:anchors[1];let offset=Math.floor((t-a.date)/DAY);let year=a.year+Math.floor(offset/yearLength);offset=((offset%yearLength)+yearLength)%yearLength;let m=1;while(offset>=monthLength(m)){offset-=monthLength(m);m++}return{year,month:m,day:offset+1}}
-function pasaranFor(y,m,d){const index=(2+dayOffset(m,d))%5;return pasaran[index]}
+function pasaranFor(y,m,d){return pasaran[(2+dayOffset(m,d))%5]}
 function weekdayFor(date){return weekdays[new Date(date.getTime()+7*3600000).getUTCDay()]}
+function weekdayCode(date){return weekdayCodes[new Date(date.getTime()+7*3600000).getUTCDay()]}
 function isToday(date){const n=new Date();return date.getUTCFullYear()===n.getFullYear()&&date.getUTCMonth()===n.getMonth()&&date.getUTCDate()===n.getDate()}
-function render(){document.getElementById("month").textContent=months[state.month-1]+" ("+state.month+")";document.getElementById("year").textContent="Koto: "+state.year;
-const wh=document.getElementById("week");wh.innerHTML=weekHeaders.map(x=>"<div>"+x+"</div>").join("");
+function render(){
+document.getElementById("month").textContent=months[state.month-1]+" ("+state.month+")";document.getElementById("year").textContent="Koto: "+state.year;
+document.getElementById("week").innerHTML=weekHeaders.map(x=>"<div>"+x+"</div>").join("");
 const grid=document.getElementById("grid");grid.innerHTML="";
-const first=dateFor(state.year,state.month,1);const start=new Date(first.getTime()+7*3600000).getUTCDay();
+const first=dateFor(state.year,state.month,1),start=new Date(first.getTime()+7*3600000).getUTCDay();
 for(let i=0;i<start;i++){const e=document.createElement("div");e.className="cell blank";grid.append(e)}
-for(let d=1;d<=monthLength(state.month);d++){const date=dateFor(state.year,state.month,d),p=pasaranFor(state.year,state.month,d),wd=weekdayFor(date);
+for(let d=1;d<=monthLength(state.month);d++){
+const date=dateFor(state.year,state.month,d),p=pasaranFor(state.year,state.month,d),wd=weekdayFor(date),code=weekdayCode(date);
 const combo=(pechCombos[state.month]||[]).some(x=>x[0]===wd&&x[1]===p.short);
-const special=named[state.month]?.[d]||namedCombos.find(x=>x.month===state.month&&x.weekday===wd&&x.pasaran===p.short)?.name||"";
-const cell=document.createElement("div");cell.className="cell"+(isToday(date)?" today":"")+(special?" special":"");
+const isSrengatGusti=code==="HOD"&&p.short==="Kl";
+const namedDay=named[state.month]?.[d]||"";
+const specialMonthSeven=state.month===7&&isSrengatGusti;
+const specialLabel=namedDay||(isSrengatGusti?"SRENGAT GUSTI":"");
+const cell=document.createElement("div");cell.className="cell"+(isToday(date)?" today":"")+(specialMonthSeven||namedDay?" special":"");
 const greg=date.getUTCDate()+"-"+(date.getUTCMonth()+1)+"-"+String(date.getUTCFullYear()).slice(-2);
-cell.innerHTML='<div class="jday '+((pechDays[state.month]||[]).includes(d)?"pech":"")+'">'+d+(special?'<br><small>'+special+'</small>':'')+'</div><div class="pasaran '+(combo?"pech":"")+'">'+p.short+' ('+p.value+')</div><div class="greg">'+greg+'</div>';
-cell.title=weekdays[wd==="Zo"?0:weekdays.indexOf(wd)]+" · "+p.name+(special?" · "+special:"");grid.append(cell)}
-}
+cell.innerHTML='<div class="jday '+((pechDays[state.month]||[]).includes(d)?"pech":"")+'">'+d+(specialLabel?'<br><small>'+specialLabel+'</small>':'')+'</div><div class="pasaran '+(combo?"pech":"")+'">'+p.short+' ('+p.value+')</div><div class="greg">'+greg+'</div>';
+cell.title=code+" / "+p.name+(isSrengatGusti?" · Srengat Gusti":"")+(specialMonthSeven?" · speciale dag":"");grid.append(cell)
+}}
 document.getElementById("prev").onclick=()=>{if(--state.month<1){state.month=10;state.year--}render()};
 document.getElementById("next").onclick=()=>{if(++state.month>10){state.month=1;state.year++}render()};
 document.getElementById("go").onclick=()=>{const value=document.getElementById("datePicker").value;if(!value){alert("Kies eerst een datum.");return}state=fromDate(new Date(value+"T00:00:00Z"));render()};
