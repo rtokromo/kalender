@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="jv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pananggalan — Print</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #e6f0e6;
+            color: #4a3a2a;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+            background-image: url('https://www.transparenttextures.com/patterns/rice-paper.png');
+        }
+        h1 {
+            font-size: 2.5rem;
+            color: #6b4420;
+            margin-bottom: 20px;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 2px solid #8b5a2b;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .kalender {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .kalender-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .kalender-header .dag {
+            background-color: #5a3a1f;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+            border-radius: 5px;
+        }
+        .dag {
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #8b5a2b;
+            border-radius: 5px;
+            padding: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .huidige-dag {
+            background-color: #a8e6a8;
+            border-color: #6b8e23;
+        }
+        .speciale-dag {
+            color: red;
+        }
+        .speciale-pasaran {
+            color: red;
+            font-weight: bold;
+        }
+        .normale-pasaran {
+            color: inherit;
+            font-weight: normal;
+        }
+        .speciale-header {
+            background-color: red;
+            color: white;
+            border-radius: 5px;
+        }
+        .speciale-dag-geel {
+            background-color: yellow;
+        }
+        .footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #8b5a2b;
+        }
+        .navigatie {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto 20px auto;
+        }
+        .navigatie button {
+            background: #8b5a2b;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+            flex-shrink: 0;
+        }
+        .navigatie button:hover {
+            background: #6b4420;
+        }
+        .navigatie span {
+            font-size: 1.2rem;
+            margin: 0 15px;
+            flex-grow: 1;
+            text-align: center;
+            white-space: nowrap;
+        }
+        .speciale-dagen-footer {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #8b5a2b;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .speciale-dagen-footer h5 {
+            font-size: 1rem;
+            margin-top: 0;
+            color: #6b4420;
+        }
+        .speciale-dagen-footer ul {
+            list-style-type: none;
+            padding: 0;
+            font-size: 0.9rem;
+        }
+        .speciale-dagen-footer ul li {
+            margin-bottom: 5px;
+        }
+        .goto-date {
+            margin-top: 20px;
+        }
+        .goto-date input {
+            padding: 8px;
+            font-size: 1rem;
+            border: 1px solid #8b5a2b;
+            border-radius: 5px;
+        }
+        .goto-date button {
+            padding: 8px 16px;
+            font-size: 1rem;
+            background-color: #8b5a2b;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .goto-date button:hover {
+            background-color: #6b4420;
+        }
+        .tijdzone-info {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border: 1px solid #8b5a2b;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2rem;
+            }
+            .navigatie button {
+                font-size: 1.2rem;
+                padding: 6px 12px;
+            }
+            .navigatie span {
+                font-size: 0.9rem;
+                margin: 0 10px;
+            }
+            .kalender {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 5px;
+            }
+            .dag {
+                padding: 5px;
+                font-size: 12px;
+            }
+        }
+
+        /* Printknop (schermweergave) */
+        .print-knop {
+            margin-top: 20px;
+        }
+        .print-knop button {
+            padding: 8px 16px;
+            font-size: 1rem;
+            background-color: #6b4420;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 4px 5px;
+        }
+        .print-knop button:hover {
+            background-color: #4a2e15;
+        }
+
+        /* Printcontainer is alleen tijdens het printen zichtbaar */
+        #printContainer {
+            display: none;
+        }
+
+        /* Printweergave: traditioneel getransponeerd rooster (weekdagen = rijen),
+           liggend (landscape), één maand per pagina, consistente opmaak */
+        @media print {
+            @page {
+                size: A4 landscape;
+                /* Ruimere zijmarges: kalender komt hierdoor in het midden van de pagina */
+                margin: 10mm 22mm;
+            }
+            /* Zorg dat achtergrondkleuren en markeringen daadwerkelijk meeprinten */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            body {
+                background: white !important;
+                background-image: none !important;
+                margin: 0;
+                padding: 0;
+                color: #000;
+            }
+            h1,
+            .container,
+            .footer {
+                display: none !important;
+            }
+            #printContainer {
+                display: block;
+            }
+            /* Gedeelde opmaak per maandblok (oriëntatie-onafhankelijk) */
+            .print-maand {
+                page-break-inside: avoid;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                box-sizing: border-box;
+                /* Lichte batik-achtergrond (kawung-motief), ingesloten zodat het meeprint */
+                background-color: #faf6ec;
+                background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPSc4MCcgaGVpZ2h0PSc4MCcgdmlld0JveD0nMCAwIDgwIDgwJz48ZyBmaWxsPSdub25lJyBzdHJva2U9JyNjOGIwODMnIHN0cm9rZS13aWR0aD0nMS4xJyBvcGFjaXR5PScwLjQ1Jz48ZWxsaXBzZSBjeD0nMjAnIGN5PScyMCcgcng9JzE0JyByeT0nOScvPjxlbGxpcHNlIGN4PScyMCcgY3k9JzIwJyByeD0nOScgcnk9JzE0Jy8+PGVsbGlwc2UgY3g9JzYwJyBjeT0nNjAnIHJ4PScxNCcgcnk9JzknLz48ZWxsaXBzZSBjeD0nNjAnIGN5PSc2MCcgcng9JzknIHJ5PScxNCcvPjxlbGxpcHNlIGN4PSc2MCcgY3k9JzIwJyByeD0nMTQnIHJ5PSc5Jy8+PGVsbGlwc2UgY3g9JzYwJyBjeT0nMjAnIHJ4PSc5JyByeT0nMTQnLz48ZWxsaXBzZSBjeD0nMjAnIGN5PSc2MCcgcng9JzE0JyByeT0nOScvPjxlbGxpcHNlIGN4PScyMCcgY3k9JzYwJyByeD0nOScgcnk9JzE0Jy8+PC9nPjxnIGZpbGw9JyNjOGIwODMnIG9wYWNpdHk9JzAuNSc+PGNpcmNsZSBjeD0nMjAnIGN5PScyMCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nNjAnIGN5PSc2MCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nNjAnIGN5PScyMCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nMjAnIGN5PSc2MCcgcj0nMS41Jy8+PGNpcmNsZSBjeD0nNDAnIGN5PSc0MCcgcj0nMS41Jy8+PC9nPjwvc3ZnPg==");
+                background-repeat: repeat;
+            }
+            /* Liggend (landscape): 1 maand per pagina, verticaal gecentreerd */
+            .mode-liggend .print-maand {
+                page-break-after: always;
+                break-after: page;
+                min-height: 185mm;
+            }
+            .mode-liggend .print-maand:last-child {
+                page-break-after: auto;
+                break-after: auto;
+            }
+            /* Staand (portrait): 2 maanden per pagina */
+            .mode-portret .print-maand {
+                min-height: 128mm;
+                padding: 2mm 0;
+            }
+            .mode-portret .print-maand:nth-child(even) {
+                page-break-after: always;
+                break-after: page;
+            }
+            .mode-portret .print-maand:nth-child(odd) {
+                page-break-after: avoid;
+                break-after: avoid;
+            }
+            .mode-portret .print-maand:last-child {
+                page-break-after: auto;
+                break-after: auto;
+            }
+            /* Compactere opmaak in staande modus zodat 2 maanden passen */
+            .mode-portret .pm-titel {
+                font-size: 12px;
+            }
+            .mode-portret .pm-grid td {
+                height: 46px;
+                font-size: 9px;
+            }
+            .mode-portret .pm-tanggal {
+                font-size: 13px;
+            }
+            .mode-portret .pm-srengat-koppen {
+                font-size: 9px;
+            }
+            /* Legenda bovenaan */
+            .pm-legenda {
+                font-size: 9px;
+                font-style: italic;
+                color: #4a3a2a;
+                margin: 0 0 3px 0;
+            }
+            /* GOGONO SRENGAT-koppen (nu onderaan) */
+            .pm-srengat-koppen {
+                font-size: 10px;
+                font-weight: bold;
+                color: #a10000;
+                margin: 6px 0 0 0;
+                line-height: 1.4;
+            }
+            /* Traditionele maandtitel */
+            .pm-titel {
+                font-size: 14px;
+                font-weight: bold;
+                color: #6b4420;
+                text-align: center;
+                margin: 0 0 6px 0;
+                border-bottom: 2px solid #8b5a2b;
+                padding-bottom: 3px;
+            }
+            /* Het rooster als tabel */
+            .pm-grid {
+                width: 100%;
+                border-collapse: collapse;
+                table-layout: fixed;
+                /* Licht doorschijnend wit onder het rooster: batik blijft zichtbaar,
+                   maar de tekst blijft goed leesbaar */
+                background-color: rgba(255, 255, 255, 0.55);
+            }
+            .pm-grid td,
+            .pm-grid th {
+                border: 1px solid #8b5a2b;
+                padding: 3px 2px;
+                text-align: center;
+                vertical-align: top;
+                font-size: 10px;
+                height: 58px;
+                box-sizing: border-box;
+            }
+            /* Weekdag-labelkolom (Dotho 5, Goto 4, ...) */
+            .pm-weekdag {
+                background-color: #5a3a1f;
+                color: white;
+                font-weight: bold;
+                width: 62px;
+                vertical-align: middle;
+                font-size: 11px;
+            }
+            .pm-weekdag small {
+                display: block;
+                font-weight: normal;
+                font-size: 9px;
+                opacity: 0.85;
+            }
+            /* Weekdag met speciale weton-combinatie in deze maand: rood label */
+            .pm-weekdag-speciaal {
+                background-color: #a10000;
+            }
+            /* Weekdag-label verticaal in het midden van de cel (overschrijft de
+               algemene 'vertical-align: top' van de datacellen) */
+            .pm-grid td.pm-weekdag {
+                vertical-align: middle;
+                font-size: 11px;
+            }
+            .pm-leeg {
+                background: repeating-linear-gradient(
+                    45deg, #f4efe6, #f4efe6 4px, #ece3d3 4px, #ece3d3 8px);
+            }
+            /* Celinhoud */
+            .pm-tanggal {
+                font-size: 15px;
+                font-weight: bold;
+                line-height: 1.1;
+            }
+            .pm-tanggal-speciaal {
+                color: #a10000;
+            }
+            .pm-pasaran {
+                font-size: 10px;
+            }
+            .pm-datum {
+                font-size: 9px;
+                color: #333;
+            }
+            /* Markeringen */
+            .pm-srengatdag {
+                background-color: #fff6a8;
+            }
+            .pm-srengatdag .pm-tanggal {
+                color: #a10000;
+            }
+            .pm-vandaag {
+                background-color: #a8e6a8;
+            }
+            .pm-pasaran-speciaal {
+                color: #a10000;
+                font-weight: bold;
+            }
+            /* Voetregel per maand: samenvatting bijzondere dagen */
+            .pm-voet {
+                margin-top: 5px;
+                font-size: 9px;
+                color: #4a3a2a;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Pananggalan</h1><p class="subtitle">Javaanse kalender</p>
+    <div class="container">
+        <div class="navigatie">
+            <button onclick="vorigeMaand()">←</button>
+            <span id="huidigeMaandWeergave"></span>
+            <button onclick="volgendeMaand()">→</button>
+        </div>
+        <div id="javaansJaar" style="font-size: 1.2rem; margin-bottom: 10px;"></div>
+        <div class="kalender-header" id="kalenderHeader">
+            <div>DOT (5)</div>
+            <div>GOT (4)</div>
+            <div>GOS (3)</div>
+            <div>JOS (7)</div>
+            <div>JOH (8)</div>
+            <div>HOD (6)</div>
+            <div>WOR (9)</div>
+        </div>
+        <div class="kalender" id="kalender"></div>
+        <div class="speciale-dagen-footer" id="specialeDagenFooter">
+            <h5>Gogonoh Srengat:</h5>
+            <ul id="specialeDagenLijst"></ul>
+        </div>
+        <div class="goto-date">
+            <input type="date" id="datePicker">
+            <button onclick="goToDate()">Pilih tanggal</button>
+        </div>
+        <div class="print-knop">
+            <button onclick="printKalender()">Print liggend (1 maand per pagina)</button>
+            <button onclick="printKalenderPortret()">Print staand (2 maanden per pagina)</button>
+        </div>
+        <div class="tijdzone-info">
+            <p></p>
+            <p><span id="huidigeTijdzone"></span></p>
+        </div>
+    </div>
+    <div class="footer">
+        © 2025 Javaanse Kalender (Tijdzone Gecorrigeerd)
+    </div>
+
+    <!-- Wordt gevuld door printKalender() en is alleen zichtbaar tijdens het printen -->
+    <div id="printContainer"></div>
+
+    <script>
+        // Toon de huidige tijdzone van de browser
+        document.getElementById('huidigeTijdzone').textContent = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        
+        // Referentiedatums - gebruik UTC om tijdzoneproblemen te voorkomen
+        const referentieDatum1 = new Date(Date.UTC(2023, 7, 5)); // 5 augustus 2023 (Javaans jaar 6449, dag 1)
+        const referentieDatum2 = new Date(Date.UTC(1975, 11, 20)); // 20 december 1975 (Javaans jaar 6400, dag 1)
+        const referentieJavaansJaar1 = 6449;
+        const referentieJavaansJaar2 = 6400;
+
+        // Lengte van een Javaans jaar in dagen
+        const javaansJaarLengte = 355;
+
+        // Javaanse maanden en hun lengte
+        const javaanseMaanden = [
+            ["Koso Soworo (1)", 36],
+            ["Pobo (2)", 35],
+            ["Mono (3)", 36],
+            ["Somo (4)", 35],
+            ["Poko (5)", 36],
+            ["Bowoko (6)", 35],
+            ["Pono (7)", 36],
+            ["Woko (8)", 35],
+            ["Sono (9)", 36],
+            ["Noto (10)", 35]
+        ];
+
+        // Pasaran data
+        const pasaranData = [
+            { naam: "Kliwon", waarde: 8, verkort: "Kl" },
+            { naam: "Legi", waarde: 5, verkort: "Lg" },
+            { naam: "Pahing", waarde: 9, verkort: "Pa" },
+            { naam: "Pon", waarde: 7, verkort: "Po" },
+            { naam: "Wage", waarde: 4, verkort: "Wa" }
+        ];
+
+        // Speciale Javaanse dagen per maand
+        const specialeJavaanseDagenPerMaand = {
+            1: [1, 11, 21, 31],
+            2: [2, 12, 22, 32],
+            3: [3, 13, 23, 33],
+            4: [4, 14, 24, 34],
+            5: [5, 15, 25, 35],
+            6: [6, 16, 26],
+            7: [7, 17, 27],
+            8: [8, 18, 28],
+            9: [9, 19, 29],
+            10: [10, 20, 30]
+        };
+
+        // Speciale dagen en Pasaran-combinaties per maand
+        const specialeDagenPasaranPerMaand = {
+            1: [
+                { dag: "Ma", pasaran: "Lg" },
+                { dag: "Di", pasaran: "Wa" },
+                { dag: "Do", pasaran: "Pa" },
+                { dag: "Vr", pasaran: "Kl" }
+            ],
+            2: [
+                { dag: "Di", pasaran: "Kl" },
+                { dag: "Wo", pasaran: "Po" },
+                { dag: "Vr", pasaran: "Lg" },
+                { dag: "Za", pasaran: "Wa" }
+            ],
+            3: [
+                { dag: "Zo", pasaran: "Po" },
+                { dag: "Wo", pasaran: "Pa" },
+                { dag: "Do", pasaran: "Wa" },
+                { dag: "Za", pasaran: "Kl" }
+            ],
+            4: [
+                { dag: "Zo", pasaran: "Wa" },
+                { dag: "Ma", pasaran: "Pa" },
+                { dag: "Do", pasaran: "Po" },
+                { dag: "Vr", pasaran: "Lg" }
+            ],
+            5: [
+                { dag: "Ma", pasaran: "Po" },
+                { dag: "Di", pasaran: "Lg" },
+                { dag: "Vr", pasaran: "Pa" },
+                { dag: "Za", pasaran: "Pa" }
+            ],
+            6: [
+                { dag: "Zo", pasaran: "Wa" },
+                { dag: "Wo", pasaran: "Kl" },
+                { dag: "Za", pasaran: "Lg" }
+            ],
+            7: [
+                { dag: "Zo", pasaran: "Wa" },
+                { dag: "Ma", pasaran: "Pa" },
+                { dag: "Do", pasaran: "Po" }
+            ],
+            8: [
+                { dag: "Ma", pasaran: "Pa" },
+                { dag: "Di", pasaran: "Kl" },
+                { dag: "Vr", pasaran: "Lg" }
+            ],
+            9: [
+                { dag: "Di", pasaran: "Kl" },
+                { dag: "Wo", pasaran: "Po" },
+                { dag: "Za", pasaran: "Wa" }
+            ],
+            10: [
+                { dag: "Zo", pasaran: "Pa" },
+                { dag: "Wo", pasaran: "Po" },
+                { dag: "Do", pasaran: "Lg" }
+            ]
+        };
+
+        // Alle speciale dagen (gecombineerd)
+        const alleSpecialeDagen = {
+            1: { 1: "HOSORO", [javaanseMaanden[0][1]]: "PANGENEP" }, // Eerste en laatste dag van de eerste maand
+            4: { 8: "PANGAPES" },
+            5: { 15: "PANJEPI" },
+            7: { 21: "PROLOJO MODJO" },
+            8: { 7: "PAMUKAS", 12: "PAMUKAS II", 16: "KAHURIPAN" }
+        };
+
+        // Speciale dagen gebaseerd op maand, dag van de week en Pasaran
+        const specialeDagenCombinaties = [
+            { maand: 7, dagVanDeWeek: "Vr", pasaran: "Kl", naam: "SRENGAT GUSTI" }
+        ];
+
+        // Huidige Javaanse jaar en maand
+        let huidigJavaansJaar = 6449;
+        let huidigeJavaanseMaand = 1;
+
+        // Functie om het Gregoriaanse jaar te verkorten naar twee cijfers
+        function verkortJaar(datum) {
+            const jaar = datum.getUTCFullYear();
+            return (jaar % 100).toString().padStart(2, '0');
+        }
+
+        // Functie om de Javaanse datum te berekenen op basis van Gregoriaanse datum
+        function converteerNaarJavaanseDatum(gregoriaanseDatum) {
+            const timestamp = Date.UTC(gregoriaanseDatum.getUTCFullYear(), gregoriaanseDatum.getUTCMonth(), gregoriaanseDatum.getUTCDate());
+            const anker = timestamp >= referentieDatum1.getTime()
+                ? { datum: referentieDatum1.getTime(), jaar: referentieJavaansJaar1 }
+                : { datum: referentieDatum2.getTime(), jaar: referentieJavaansJaar2 };
+            const dagenVerschil = Math.floor((timestamp - anker.datum) / (1000 * 60 * 60 * 24));
+            let resterendeDagen = dagenVerschil;
+            const javaansJaar = anker.jaar + Math.floor(resterendeDagen / javaansJaarLengte);
+            resterendeDagen = ((resterendeDagen % javaansJaarLengte) + javaansJaarLengte) % javaansJaarLengte;
+            let javaanseMaand = 1;
+            while (javaanseMaand <= javaanseMaanden.length && resterendeDagen >= javaanseMaanden[javaanseMaand - 1][1]) {
+                resterendeDagen -= javaanseMaanden[javaanseMaand - 1][1];
+                javaanseMaand++;
+            }
+            return { javaansJaar, javaanseMaand, javaanseDag: resterendeDagen + 1 };
+        }
+
+        // Functie om de Gregoriaanse datum te berekenen op basis van Javaanse datum
+        function berekenGregoriaanseDatum(javaansJaar, javaanseMaand, javaanseDag) {
+            let referentieDatum, referentieJavaansJaar;
+
+            // Bepaal welke referentiedatum het dichtst bij het Javaanse jaar ligt
+            if (javaansJaar >= referentieJavaansJaar1) {
+                referentieDatum = referentieDatum1;
+                referentieJavaansJaar = referentieJavaansJaar1;
+            } else {
+                referentieDatum = referentieDatum2;
+                referentieJavaansJaar = referentieJavaansJaar2;
+            }
+
+            const jarenVerschil = javaansJaar - referentieJavaansJaar;
+            let dagenVerschil = jarenVerschil * javaansJaarLengte;
+
+            // Voeg de dagen van de voorgaande maanden toe
+            for (let i = 0; i < javaanseMaand - 1; i++) {
+                dagenVerschil += javaanseMaanden[i][1];
+            }
+
+            // Voeg de dagen van de huidige maand toe
+            dagenVerschil += javaanseDag - 1;
+
+            // Bereken de Gregoriaanse datum in UTC
+            const gregoriaanseDatum = new Date(referentieDatum);
+            gregoriaanseDatum.setUTCDate(gregoriaanseDatum.getUTCDate() + dagenVerschil);
+
+            return gregoriaanseDatum;
+        }
+
+        // Functie om de dag van de week te bepalen (in Javaanse tijdzone UTC+7)
+        function bepaalDagVanDeWeek(datum) {
+            // Converteer naar Javaanse tijd (UTC+7)
+            const javaanseTijd = new Date(datum.getTime() + (7 * 60 * 60 * 1000));
+            const dagen = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"];
+            return dagen[javaanseTijd.getUTCDay()];
+        }
+
+        // Functie om te controleren of een Javaanse dag speciaal is
+        function isSpecialeJavaanseDag(maand, dag) {
+            return specialeJavaanseDagenPerMaand[maand]?.includes(dag) || false;
+        }
+
+        // Functie om te controleren of een dag en Pasaran-combinatie speciaal is
+        function isSpecialeDagPasaran(maand, dagVanDeWeek, pasaran) {
+            const specialeDagen = specialeDagenPasaranPerMaand[maand] || [];
+            return specialeDagen.some(
+                (specialeDag) => specialeDag.dag === dagVanDeWeek && specialeDag.pasaran === pasaran
+            );
+        }
+
+        // Functie om te controleren of een dag een speciale dag is
+        function isSpecialeDag(maand, dag) {
+            return alleSpecialeDagen[maand]?.[dag] || null;
+        }
+
+        // Functie om de kalenderheader te markeren
+        function markeerKalenderHeader(maand) {
+            const kalenderHeader = document.getElementById('kalenderHeader');
+            const headerDagen = kalenderHeader.children;
+
+            // Reset alle header-dagen
+            for (let i = 0; i < headerDagen.length; i++) {
+                headerDagen[i].classList.remove('speciale-header');
+            }
+
+            // Markeer de speciale header-dagen
+            const specialeDagen = specialeDagenPasaranPerMaand[maand] || [];
+            specialeDagen.forEach((specialeDag) => {
+                const dagIndex = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"].indexOf(specialeDag.dag);
+                if (dagIndex !== -1) {
+                    headerDagen[dagIndex].classList.add('speciale-header');
+                }
+            });
+        }
+
+        // Functie om de speciale dagen in de footer weer te geven
+        function toonSpecialeDagenFooter(specialeDagen) {
+            const specialeDagenLijst = document.getElementById('specialeDagenLijst');
+            specialeDagenLijst.innerHTML = "";
+
+            specialeDagen.forEach((specialeDag) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${specialeDag.naam}: ${specialeDag.gregoriaanseDatum}`;
+                specialeDagenLijst.appendChild(listItem);
+            });
+        }
+
+        // Functie om de Pasaran te bepalen (tijdzone-neutraal)
+        function bepaalPasaran(datum) {
+            const { javaanseMaand, javaanseDag } = converteerNaarJavaanseDatum(datum);
+            let dagVanJaar = javaanseDag - 1;
+            for (let maand = 1; maand < javaanseMaand; maand++) dagVanJaar += javaanseMaanden[maand - 1][1];
+            const cyclus = ["Legi", "Pahing", "Pon", "Wage", "Kliwon"];
+            return cyclus[(2 + dagVanJaar) % 5];
+        }
+
+        // Functie om de Javaanse kalender weer te geven
+        function toonJavaanseKalender() {
+            const kalenderElement = document.getElementById('kalender');
+            const javaansJaarElement = document.getElementById('javaansJaar');
+            const huidigeMaandWeergave = document.getElementById('huidigeMaandWeergave');
+            kalenderElement.innerHTML = "";
+
+            // Toon het Javaanse jaartal bovenaan
+            javaansJaarElement.textContent = `Taun Jawa: ${huidigJavaansJaar}`;
+
+            // Toon de huidige Javaanse maand
+            huidigeMaandWeergave.textContent = `${javaanseMaanden[huidigeJavaanseMaand - 1][0]}`;
+
+            // Markeer de kalenderheader
+            markeerKalenderHeader(huidigeJavaanseMaand);
+
+            // Bepaal het aantal dagen in de Javaanse maand
+            const dagenInMaand = javaanseMaanden[huidigeJavaanseMaand - 1][1];
+
+            // Bepaal de Gregoriaanse startdatum van de Javaanse maand (in UTC)
+            const startDatum = berekenGregoriaanseDatum(huidigJavaansJaar, huidigeJavaanseMaand, 1);
+
+            // Bepaal de dag van de week van de eerste dag van de Javaanse maand (in Javaanse tijd UTC+7)
+            const eersteDagVanDeWeek = new Date(startDatum.getTime() + (7 * 60 * 60 * 1000)).getUTCDay();
+
+            // Voeg lege vakjes toe voor de dagen vóór de eerste dag van de maand
+            for (let i = 0; i < eersteDagVanDeWeek; i++) {
+                const leegElement = document.createElement('div');
+                leegElement.className = 'dag';
+                kalenderElement.appendChild(leegElement);
+            }
+
+            // Huidige datum in de LOKALE tijdzone van de gebruiker.
+            // Lees de lokale kalenderdag en bouw daarmee een UTC-middernachtdatum,
+            // zodat de vergelijking aansluit op de dagcellen (ook op UTC-middernacht).
+            // Gevolg: iemand in Jakarta (UTC+7) ziet zijn reeds aangebroken lokale dag,
+            // iemand in Paramaribo (UTC-3) ziet zijn eigen lokale dag.
+            const nu = new Date();
+            const lokaleVandaag = new Date(Date.UTC(nu.getFullYear(), nu.getMonth(), nu.getDate()));
+            const huidigeUTCDag = lokaleVandaag.getUTCDate();
+            const huidigeUTCMaand = lokaleVandaag.getUTCMonth() + 1;
+            const huidigeUTCJaar = lokaleVandaag.getUTCFullYear();
+
+            // Lijst om speciale dagen op te slaan
+            const specialeDagen = [];
+
+            // Voeg de dagen van de Javaanse maand toe
+            for (let dag = 1; dag <= dagenInMaand; dag++) {
+                const gregoriaanseDatum = berekenGregoriaanseDatum(huidigJavaansJaar, huidigeJavaanseMaand, dag);
+                const pasaran = bepaalPasaran(gregoriaanseDatum);
+                const pasaranInfo = pasaranData.find(p => p.naam === pasaran);
+                const pasaranWaarde = pasaranInfo?.waarde || 0;
+                const verkortePasaran = pasaranInfo?.verkort || pasaran;
+                const verkortGregoriaansJaar = verkortJaar(gregoriaanseDatum);
+                const dagVanDeWeek = bepaalDagVanDeWeek(gregoriaanseDatum);
+
+                // Controleer of dit de huidige dag is (op basis van de lokale dag van de gebruiker)
+                const isHuidigeDag =
+                    gregoriaanseDatum.getUTCDate() === huidigeUTCDag &&
+                    gregoriaanseDatum.getUTCMonth() + 1 === huidigeUTCMaand &&
+                    gregoriaanseDatum.getUTCFullYear() === huidigeUTCJaar;
+
+                // Controleer of dit een speciale Javaanse dag is
+                const isSpecialeJavaanseDagVoorMaand = isSpecialeJavaanseDag(huidigeJavaanseMaand, dag);
+
+                // Controleer of dit een speciale dag en Pasaran-combinatie is
+                const isSpecialeDagPasaranVoorMaand = isSpecialeDagPasaran(huidigeJavaanseMaand, dagVanDeWeek, verkortePasaran);
+
+                // Controleer of dit een speciale dag is
+                const specialeDag = isSpecialeDag(huidigeJavaanseMaand, dag);
+
+                // Controleer of dit een speciale combinatie is (maand, dag van de week, Pasaran)
+                const specialeCombinatie = specialeDagenCombinaties.find(
+                    (combinatie) =>
+                        combinatie.maand === huidigeJavaanseMaand &&
+                        combinatie.dagVanDeWeek === dagVanDeWeek &&
+                        combinatie.pasaran === verkortePasaran
+                );
+
+                // Als het een speciale dag is, voeg deze toe aan de lijst
+                if (specialeDag || specialeCombinatie) {
+                    specialeDagen.push({
+                        naam: specialeDag || specialeCombinatie.naam,
+                        gregoriaanseDatum: `${gregoriaanseDatum.getUTCDate()}-${gregoriaanseDatum.getUTCMonth() + 1}-${gregoriaanseDatum.getUTCFullYear()}`
+                    });
+                }
+
+                const dagElement = document.createElement('div');
+                dagElement.className = `dag ${isHuidigeDag ? 'huidige-dag' : ''} ${specialeDag || specialeCombinatie ? 'speciale-dag-geel' : ''}`;
+                dagElement.innerHTML = `
+                    <strong class="${isSpecialeJavaanseDagVoorMaand ? 'speciale-dag' : ''}">${dag}</strong><br>
+                    <span class="${isSpecialeDagPasaranVoorMaand ? 'speciale-pasaran' : 'normale-pasaran'}">${verkortePasaran}</span> (${pasaranWaarde})<br>
+                    ${gregoriaanseDatum.getUTCDate()}-${gregoriaanseDatum.getUTCMonth() + 1}-${verkortGregoriaansJaar}
+                `;
+                kalenderElement.appendChild(dagElement);
+            }
+
+            // Toon de speciale dagen in de footer
+            toonSpecialeDagenFooter(specialeDagen);
+        }
+
+        // Functie om naar de volgende maand te gaan
+        function volgendeMaand() {
+            if (huidigeJavaanseMaand < 10) {
+                huidigeJavaanseMaand++;
+            } else {
+                huidigeJavaanseMaand = 1;
+                huidigJavaansJaar++;
+            }
+            toonJavaanseKalender();
+        }
+
+        // Functie om naar de vorige maand te gaan
+        function vorigeMaand() {
+            if (huidigeJavaanseMaand > 1) {
+                huidigeJavaanseMaand--;
+            } else {
+                huidigeJavaanseMaand = 10;
+                huidigJavaansJaar--;
+            }
+            toonJavaanseKalender();
+        }
+
+        // Functie om naar een specifieke datum te gaan
+        function goToDate() {
+            const datePicker = document.getElementById('datePicker');
+            const selectedDate = new Date(datePicker.value + 'T00:00:00Z'); // Behandel als UTC
+
+            if (isNaN(selectedDate.getTime())) {
+                alert("Selecteer een geldige datum.");
+                return;
+            }
+
+            const { javaansJaar, javaanseMaand } = converteerNaarJavaanseDatum(selectedDate);
+            huidigJavaansJaar = javaansJaar;
+            huidigeJavaanseMaand = javaanseMaand;
+            toonJavaanseKalender();
+        }
+
+        // ---- Referentiedata voor de traditionele printweergave (uit manual 6450) ----
+
+        // SASI-namen per maand (traditionele maandnaam-aanduiding)
+        const sasiNamen = [
+            "PANGAKSUMA",       // 1. Koso Soworo
+            "PANGARAHAN",       // 2. Pobo
+            "KARUNGSITAN",      // 3. Mono
+            "KADJUGRUGAN",      // 4. Somo
+            "KADELESAN PANYEPI",// 5. Poko
+            "KELEYEK",          // 6. Bowoko
+            "PANDJELESAN",      // 7. Pono
+            "PEPENGET",         // 8. Woko
+            "KAREPOTAN",        // 9. Sono
+            "PANATAN"           // 10. Noto
+        ];
+
+        // Vaste jaarlabel-staart uit de manual. LET OP: "TOSO THOTOKO 19" is
+        // overgenomen uit de manual voor Koto 6450; de genereerregel hiervan is
+        // niet bekend, dus voor andere jaren kan dit label afwijken.
+        const jaarLabelStaart = "TOSO THOTOKO 19 DJOWO";
+
+        // GOGONO SRENGAT-koppen per maand (letterlijk uit de manual)
+        const gogonoSrengatKoppen = {
+            1: ["GOGONO SRENGAT HOSORO TANGGAL 1", "GOGONO SRENGAT PANGENEP TANGGAL 36"],
+            4: ["GOGONO SRENGAT PANGAPES TANGGAL 8"],
+            5: ["GOGONO SRENGAT PANJEPI TANGGAL 15"],
+            7: ["GOGONO SRENGAT PROLOJO MODJO TANGGAL 21", "GOGONO SRENGAT GUSTI TANGGAL 20"],
+            8: ["SRENGAT PAMUKAS TANGGAL 7", "SRENGAT PAMUKAS KAPINDHO TANGGAL 12", "GOGONO SRENGAT KAHURIPAN TANGGAL 16"]
+        };
+
+        // Weekdagen in de vaste traditionele volgorde (rijen van het rooster),
+        // met neptu en de koppeling naar de verkorte weekdag uit bepaalDagVanDeWeek.
+        // De index komt overeen met getUTCDay() (0 = Zo = Dotho ... 6 = Za = Woro).
+        const traditioneleWeekdagen = [
+            { label: "Dotho", neptu: 5, kort: "Zo" },
+            { label: "Goto",  neptu: 4, kort: "Ma" },
+            { label: "Goso",  neptu: 3, kort: "Di" },
+            { label: "Joso",  neptu: 7, kort: "Wo" },
+            { label: "Joho",  neptu: 8, kort: "Do" },
+            { label: "Hodo",  neptu: 6, kort: "Vr" },
+            { label: "Woro",  neptu: 9, kort: "Za" }
+        ];
+
+        // Engelse maandafkortingen om de datumnotatie van de manual te evenaren (bv. 25-Jul-24)
+        const engMaandKort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+        function formatteerDatumManual(g) {
+            const dd = g.getUTCDate();
+            const mmm = engMaandKort[g.getUTCMonth()];
+            const yy = (g.getUTCFullYear() % 100).toString().padStart(2, "0");
+            return `${dd}-${mmm}-${yy}`;
+        }
+
+        // Bouw de print-HTML voor één Javaanse maand op in het TRADITIONELE formaat:
+        // weekdagen als rijen, weken als kolommen. Elke cel toont tanggal,
+        // pasaran + neptu en de Gregoriaanse datum. Hergebruikt exact dezelfde
+        // rekenlogica als de schermweergave.
+        function genereerMaandPrintHTML(jaar, maand) {
+            const maandNaam = javaanseMaanden[maand - 1][0].replace(/\s*\(\d+\)$/, ""); // "(1)" weghalen
+            const dagenInMaand = javaanseMaanden[maand - 1][1];
+
+            // Startweekdag (in Javaanse tijd UTC+7) → index 0..6
+            const startDatum = berekenGregoriaanseDatum(jaar, maand, 1);
+            const startKort = bepaalDagVanDeWeek(startDatum);
+            const startIndex = ["Zo", "Ma", "Di", "Wo", "Do", "Vr", "Za"].indexOf(startKort);
+
+            // Altijd 6 kolommen, zodat élke maand dezelfde breedte/indeling heeft.
+            // Een 35-daagse maand vult 5 kolommen; de 6e kolom blijft dan leeg (gearceerd).
+            const aantalKolommen = 6;
+
+            // Vandaag op basis van de LOKALE dag van de gebruiker
+            const nu = new Date();
+            const lokaleVandaag = new Date(Date.UTC(nu.getFullYear(), nu.getMonth(), nu.getDate()));
+            const vDag = lokaleVandaag.getUTCDate();
+            const vMaand = lokaleVandaag.getUTCMonth() + 1;
+            const vJaar = lokaleVandaag.getUTCFullYear();
+
+            // Verzamel bijzondere dagen voor de voetregel
+            const bijzondereDagen = [];
+
+            // Bouw het tabelrooster: 7 weekdag-rijen × aantalKolommen weken
+            let gridHTML = '<table class="pm-grid"><tbody>';
+
+            for (let r = 0; r < 7; r++) {
+                const wd = traditioneleWeekdagen[r];
+                // Eerste dag van deze weekdag binnen de maand
+                const offset = (r - startIndex + 7) % 7;
+                const eersteDag = 1 + offset;
+                // Weekdagen die VÓÓR de startweekdag liggen, beginnen pas in kolom 2:
+                // hun eerste voorkomen valt in de eerste hele week (kolomindex 1). Zo
+                // staan de dagen binnen elke kolom in de juiste volgorde, ook als de
+                // maand niet op zondag (Dotho) begint.
+                const startKolom = (r >= startIndex) ? 0 : 1;
+
+                // Weekdagen met een speciale weton-combinatie in deze maand krijgen
+                // een rood label (zoals de rode weekdag-koppen op het scherm).
+                const specWeekdagen = (specialeDagenPasaranPerMaand[maand] || []).map(s => s.dag);
+                const isSpecWeekdag = specWeekdagen.includes(wd.kort);
+
+                gridHTML += '<tr>';
+                gridHTML += `<td class="pm-weekdag ${isSpecWeekdag ? "pm-weekdag-speciaal" : ""}">${wd.label}<small>${wd.neptu}</small></td>`;
+
+                for (let kol = 0; kol < aantalKolommen; kol++) {
+                    // Lege cel vóór het eerste voorkomen van deze weekdag
+                    if (kol < startKolom) {
+                        gridHTML += '<td class="pm-leeg"></td>';
+                        continue;
+                    }
+
+                    const dag = eersteDag + (kol - startKolom) * 7;
+
+                    if (dag > dagenInMaand) {
+                        gridHTML += '<td class="pm-leeg"></td>';
+                        continue;
+                    }
+
+                    const g = berekenGregoriaanseDatum(jaar, maand, dag);
+                    const pasaran = bepaalPasaran(g);
+                    const pInfo = pasaranData.find(p => p.naam === pasaran);
+                    const pWaarde = pInfo?.waarde || 0;
+                    // Lokale schrijfwijze: "Pahing" wordt "Paing" (rekenlogica blijft ongewijzigd)
+                    const pasaranWeergave = (pasaran === "Pahing") ? "Paing" : pasaran;
+
+                    // Benoemde bijzondere dag (GOGONO SRENGAT) op deze tanggal?
+                    const specDag = isSpecialeDag(maand, dag);
+                    // Speciale Javaanse dag → rood dagnummer (zoals op het scherm)
+                    const isSpecJavDag = isSpecialeJavaanseDag(maand, dag);
+                    // Speciale weekdag/pasaran-combinatie (uit bestaande app-tabel)
+                    const isSpecPas = isSpecialeDagPasaran(maand, wd.kort, pInfo?.verkort || pasaran);
+                    const specComb = specialeDagenCombinaties.find(
+                        (c) => c.maand === maand && c.dagVanDeWeek === wd.kort && c.pasaran === (pInfo?.verkort || pasaran)
+                    );
+
+                    if (specDag) {
+                        bijzondereDagen.push(`${specDag} (tgl ${dag}, ${formatteerDatumManual(g)})`);
+                    } else if (specComb) {
+                        bijzondereDagen.push(`${specComb.naam} (tgl ${dag}, ${formatteerDatumManual(g)})`);
+                    }
+
+                    const celKlassen = [];
+                    if (specDag) celKlassen.push("pm-srengatdag");
+
+                    gridHTML += `<td class="${celKlassen.join(" ")}">
+                        <div class="pm-tanggal ${isSpecJavDag ? "pm-tanggal-speciaal" : ""}">${dag}</div>
+                        <div class="pm-pasaran ${isSpecPas ? "pm-pasaran-speciaal" : ""}">${pasaranWeergave} ${pWaarde}</div>
+                        <div class="pm-datum">${formatteerDatumManual(g)}</div>
+                    </td>`;
+                }
+
+                gridHTML += '</tr>';
+            }
+
+            gridHTML += '</tbody></table>';
+
+            // GOGONO SRENGAT-koppen (nu ONDERAAN), met de berekende Gregoriaanse datum
+            const koppen = [...(gogonoSrengatKoppen[maand] || [])];
+            if (maand === 7) {
+                for (let tgl = 1; tgl <= dagenInMaand; tgl++) {
+                    const gd = berekenGregoriaanseDatum(jaar, maand, tgl);
+                    if (bepaalDagVanDeWeek(gd) === "Vr" && bepaalPasaran(gd) === "Kliwon") {
+                        koppen.push(`GOGONO SRENGAT GUSTI TANGGAL ${tgl}`);
+                    }
+                }
+            }
+            const koppenMetDatum = koppen.map((kop) => {
+                const mTgl = kop.match(/TANGGAL\s+(\d+)/);
+                if (mTgl) {
+                    const tgl = parseInt(mTgl[1], 10);
+                    if (tgl >= 1 && tgl <= dagenInMaand) {
+                        const gd = berekenGregoriaanseDatum(jaar, maand, tgl);
+                        return `${kop} &nbsp;(${formatteerDatumManual(gd)})`;
+                    }
+                }
+                return kop;
+            });
+            const koppenHTML = koppenMetDatum.length
+                ? `<div class="pm-srengat-koppen">${koppenMetDatum.join("<br>")}</div>`
+                : "";
+
+            return `<div class="print-maand">
+                <div class="pm-titel">${maand}. ${maandNaam} SASI ${sasiNamen[maand - 1]} KOTO ${jaar} ${jaarLabelStaart}</div>
+                ${gridHTML}
+                ${koppenHTML}
+            </div>`;
+        }
+
+        // Stel de paginaoriëntatie/marges in via een apart style-element (overschrijft
+        // de statische @page-regel omdat het later in het document staat).
+        function zetPaginaOrientatie(paginaCss) {
+            let styleEl = document.getElementById('pageOrientation');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'pageOrientation';
+                document.head.appendChild(styleEl);
+            }
+            styleEl.textContent = paginaCss;
+        }
+
+        // Vul de printcontainer met alle 10 maanden van het getoonde Javaanse jaar
+        function vulPrintContainer(printContainer, modusKlasse) {
+            printContainer.className = modusKlasse;
+            let html = '';
+            for (let maand = 1; maand <= 10; maand++) {
+                html += genereerMaandPrintHTML(huidigJavaansJaar, maand);
+            }
+            printContainer.innerHTML = html;
+        }
+
+        // Liggend: 1 maand per pagina
+        function printKalender() {
+            const printContainer = document.getElementById('printContainer');
+            zetPaginaOrientatie('@page { size: A4 landscape; margin: 10mm 22mm; }');
+            vulPrintContainer(printContainer, 'mode-liggend');
+            window.print();
+        }
+
+        // Staand: 2 maanden per pagina
+        function printKalenderPortret() {
+            const printContainer = document.getElementById('printContainer');
+            zetPaginaOrientatie('@page { size: A4 portrait; margin: 12mm 14mm; }');
+            vulPrintContainer(printContainer, 'mode-portret');
+            window.print();
+        }
+
+        // Initialiseer de kalender bij het laden van de pagina
+        document.addEventListener('DOMContentLoaded', () => {
+            // Open op de Javaanse maand die hoort bij de LOKALE dag van de gebruiker.
+            const nu = new Date();
+            const lokaleVandaag = new Date(Date.UTC(nu.getFullYear(), nu.getMonth(), nu.getDate()));
+            const { javaansJaar, javaanseMaand } = converteerNaarJavaanseDatum(lokaleVandaag);
+            huidigJavaansJaar = javaansJaar;
+            huidigeJavaanseMaand = javaanseMaand;
+            toonJavaanseKalender();
+        });
+    </script>
+</body>
+</html>
